@@ -53,10 +53,11 @@ def main():
             break
         elif key == ord("e"):
             # 按e 重新设置背景深度图
+            vt.clear_background_depth()
             vt.set_background_depth(frame)
 
-    vt.release()
     vt.disable_stream()
+    vt.release()
 
 
 if __name__ == "__main__":

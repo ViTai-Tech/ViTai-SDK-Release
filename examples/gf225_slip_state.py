@@ -47,14 +47,8 @@ def main():
     vt.calibrate(calib_num) # 启动标定
     while 1:
         frame = vt.get_wrapped_frame()
-
         if vt.is_calibrate():
-            vector = vt.get_3d_vector()
-            if vector is not None:
-                # print(vector)
-                pass
             slip_state = vt.slip_state()
-            # print(slip_state.name)
         frame_copy = frame.copy()
         put_text_to_image(frame_copy, slip_state.name)
         cv2.imshow(f"frame", frame_copy)
