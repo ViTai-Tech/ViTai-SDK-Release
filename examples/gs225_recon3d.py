@@ -24,8 +24,8 @@ def main():
     vtsd = VTSDeviceFinder()
 
     # 修改指定传感器SN
-    config = vtsd.get_device_by_sn("0001")
-    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth")
+    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
 
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])

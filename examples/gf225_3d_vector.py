@@ -28,8 +28,8 @@ print(f"Project root directory: {project_root}")
 def main():
     vtsd = VTSDeviceFinder()
 
-    config = vtsd.get_device_by_sn("0001")
-    vts = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth")
+    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    vts = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
 
     vts.set_manual_warp_params([[233, 92], [427, 92], [412, 272], [243, 272]], 1.0, dsize=[240, 240])
 

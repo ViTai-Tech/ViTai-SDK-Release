@@ -12,7 +12,7 @@ def auto_warp_mode():
     vtsd = VTSDeviceFinder()
 
     # 修改指定传感器SN
-    config = vtsd.get_device_by_sn("0001")
+    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
     vt = GF225(config=config)
     vt.set_auto_warp_paddings(30, 40, 35, 30)
     vt.flush(30)

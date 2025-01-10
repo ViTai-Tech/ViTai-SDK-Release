@@ -84,7 +84,7 @@ class Suber(QThread):
         print(f'init_vt.')
         self._finder = VTSDeviceFinder()
         config = self._finder.get_device_by_sn(self._sn)
-        self._vt = GF225(config=config, model_path=self._model_path)
+        self._vt = GF225(config=config, model_path=self._model_path, device="cpu")
         self._vt.set_manual_warp_params(self._manual_warp_params, 1.0, dsize=self._dsize)
 
 
