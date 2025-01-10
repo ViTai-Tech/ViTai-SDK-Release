@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # coding=utf-8
 """
-Author       : Jay jay.zhangjunjie@outlook.com
-Date         : 2024-10-20 22:24:06
-LastEditTime : 2024-10-20 23:23:54
-LastEditors  : Jay jay.zhangjunjie@outlook.com
 Description  : Example:获取传感器图像
 """
 import cv2
@@ -12,53 +8,55 @@ import cv2
 from pyvitaisdk import GF225, VTSDeviceFinder
 
 
-def autoWarpMode():
+def auto_warp_mode():
     vtsd = VTSDeviceFinder()
 
-    gf225Config = vtsd.getDeviceByProductID("5856")
-    vts = GF225(config=gf225Config)
-    vts.setAutoWarpPaddings(30, 40, 35, 30)
+    # 修改指定传感器SN
+    config = vtsd.get_device_by_sn("0001")
+    vt = GF225(config=config)
+    vt.set_auto_warp_paddings(30, 40, 35, 30)
+    vt.flush(30)
 
-    vts.flush(30)
 
     while 1:
-        ret, frame = vts.read()
-
-        cv2.imshow("RawImage", vts.getRawFrame())
-        cv2.imshow("Image", frame)
+        ret, raw_frame, warpped_frame = vt.read()
+        if ret:
+            cv2.imshow(f"raw_frame", raw_frame)
+            cv2.imshow(f"warpped_frame", warpped_frame)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
             break
-        print(f"Current FPS:{vts.fps}")
 
-    vts.release()
+    vt.release()
 
 
-def manualWarpMode():
+def manual_warp_mode():
 
     vtsd = VTSDeviceFinder()
 
-    gf225Config = vtsd.getDeviceByProductID("5856")
-    vts = GF225(config=gf225Config)
-    vts.setManualWarpParams([[240, 99], [434, 101], [417, 275], [249, 271]], 1.5, dsize=[240, 240])
+    # 修改指定传感器SN
+    config = vtsd.get_device_by_sn("0001")
+    vt = GF225(config=config)
+    # 修改参数
+    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
 
     while 1:
-        ret, frame = vts.read()
+        ret, raw_frame, warpped_frame = vt.read()
+        if ret:
+            cv2.imshow(f"raw_frame", raw_frame)
+            cv2.imshow(f"warpped_frame", warpped_frame)
+        # print(f"WarpSrc: {vt.get_warp_params()}")
 
-        cv2.imshow("RawImage", vts.getRawFrame())
-        cv2.imshow("Image", frame)
-
-        key = cv2.waitKey(1) & 255
+        key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
-        print(f"Current FPS:{vts.fps}")
 
-    vts.release()
+    vt.release()
 
 
 if __name__ == "__main__":
 
-    autoWarpMode()
+    # auto_warp_mode()
 
-    # manualWarpMode()
+    manual_warp_mode()

@@ -1,55 +1,64 @@
 #!/usr/bin/env python3
 # coding=utf-8
-'''
-Author       : Jay jay.zhangjunjie@outlook.com
-Date         : 2024-10-20 22:24:06
-LastEditTime : 2024-10-21 00:00:25
-LastEditors  : Jay jay.zhangjunjie@outlook.com
-Description  : Example:深度恢复
-'''
-import pathlib
-
+"""
+Description  : 深度恢复示例
+"""
 import cv2
+from pyvitaisdk import GF225, VTSDeviceFinder
+from pathlib import Path
 
-from pyvitaisdk import GF225, GF225GelProfile, VTSDeviceFinder
-from pyvitaisdk.reconstruct3d import Reconstruction3D
 
-basePath = pathlib.Path(__file__).parent.parent.absolute()
+def get_project_root():
+    current_file_path = Path(__file__).resolve()
+    current_dir = current_file_path.parent
+    project_root = current_dir.parent
+    return project_root
 
+
+project_root = get_project_root()
+print(f"Project root directory: {project_root}")
 
 
 def main():
 
     vtsd = VTSDeviceFinder()
 
-    print(vtsd)
-    gf225Config = vtsd.getDeviceByProductID("5856")
-    print(gf225Config)
+    # 修改指定传感器SN
+    config = vtsd.get_device_by_sn("0001")
+    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth")
 
-
-    vts = GF225(config=gf225Config)
-    vts.setAutoWarpPaddings(30,40,35,30)
-    vts.setManualWarpParams([[240, 99], [434, 101], [417, 275], [249, 271]], 1.5, dsize=[240,240])
-
-    recon3D = Reconstruction3D(deviceType="mps")
-    recon3D.loadModel(f"{basePath}/test/2024-10-17-15-31_001.pth")
-    recon3D.setGelParams(GF225GelProfile.NORMAL.width, GF225GelProfile.NORMAL.height, GF225GelProfile.NORMAL.thickness)
-    vts.flush(30)
-
+    # 修改参数
+    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    # vt.set_auto_warp_paddings(30, 40, 35, 30)
+    vt.enable_stream()
+    frame = vt.get_wrapped_frame()
+    vt.set_background_depth(frame)
     while 1:
-        ret, frame = vts.read()
-        recon3D.setBackgroundDepthMask(frame, 50)
-        if recon3D.isBackgroundDepthMaskInit():
-            diffGray = recon3D.getDiffGrayImage(recon3D.getDepthMap(frame))
-            cv2.imshow("diffGray", diffGray)
-        
-        cv2.imshow("image", frame)
+
+        frame = vt.get_wrapped_frame()
+        cv2.imshow(f"get_wrapped_frame", frame)
+        cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
+        if vt.is_background_depth_init():
+            vt.recon3d(frame)
+            background_depth_map = vt.get_background_depth_map()
+            depth_map = vt.get_depth_map()
+            diff_depth_map = vt.get_diff_depth_map()
+            cv2.imshow(f"depth_map", depth_map)
+            cv2.imshow(f"background_depth_map", background_depth_map)
+            cv2.imshow(f"diff_depth_map", diff_depth_map)
+
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
             break
-        print(f"Current FPS:{vts.fps}")
-    vts.release()
+        elif key == ord("e"):
+            # 按e 重新设置背景深度图
+            vt.set_background_depth(frame)
+
+    vt.release()
+    vt.disable_stream()
+
 
 if __name__ == "__main__":
+
     main()

@@ -61,18 +61,26 @@ Python==3.8.*
    if __name__ == "__main__":
    
        finder = VTSDeviceFinder()
+       # 获取所有的序列号
+       print('finder.get_sns()', finder.get_sns())
+   
+       # 获取所有的Vendor ID
+       print('finder.get_vendorIDs()', finder.get_vendorIDs())
    
        # 打印目前链接的所有传感器信息
-       print(finder.getDevices())
+       print('finder.get_devices()', finder.get_devices())
        
        # 打印目前链接的传感器数量
-       print(finder.getCount())
+       print('finder.count()', finder.count())
    
-       # 打印指定型号的传感器信息,目前相机的Model为0bda,后续将为GF225
-       print(finder.getDevicesByModel("0bda"))
+       # 打印目前链接的传感器数量
+       print('finder.indexes()', finder.indexes())
+   
+       # 打印指定型号的传感器信息
+       print('finder.get_devices_by_vendorID', finder.get_devices_by_vendorID("f225"))
    
        # 打印指定序列号的传感器信息
-       print(finder.getDeviceByProductID("5856"))
+       print('finder.get_device_by_sn', finder.get_device_by_sn("0001"))
    
    ```
 
