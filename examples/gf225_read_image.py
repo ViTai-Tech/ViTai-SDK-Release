@@ -36,7 +36,7 @@ def manual_warp_mode():
     vtsd = VTSDeviceFinder()
 
     # 修改指定传感器SN
-    config = vtsd.get_device_by_sn("0001")
+    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
     vt = GF225(config=config)
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
@@ -57,6 +57,6 @@ def manual_warp_mode():
 
 if __name__ == "__main__":
 
-    # auto_warp_mode()
+    auto_warp_mode()
 
-    manual_warp_mode()
+    # manual_warp_mode()
