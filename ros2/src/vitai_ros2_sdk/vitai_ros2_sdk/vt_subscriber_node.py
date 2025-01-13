@@ -9,14 +9,14 @@ class ImageSubscriber(Node):
         super().__init__('image_subscriber')
         self.subscription = self.create_subscription(
             Image,
-            'raw_img',
+            'depth_map',
             self.listener_callback,
             10)
         self.subscription  # prevent unused variable warning
         self.bridge = CvBridge()
 
     def listener_callback(self, msg):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='32FC1')
         self.get_logger().info('Subscribe image')
         cv2.imshow('Received Image', cv_image)
         cv2.waitKey(1)

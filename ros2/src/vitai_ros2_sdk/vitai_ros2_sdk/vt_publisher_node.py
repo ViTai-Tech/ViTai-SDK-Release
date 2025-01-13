@@ -1,17 +1,12 @@
-import logging
 import rclpy
-import cv2
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+from pynput import keyboard
 
 from pyvitaisdk import GF225, VTSDeviceFinder
-
-
-logging.basicConfig(level=logging.WARN)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+import cv2
 
 
 class VtPublisherNode(Node):
@@ -19,35 +14,90 @@ class VtPublisherNode(Node):
         super().__init__("vt_publisher_node")
         qos_profile = QoSProfile(depth=10)
         self.raw_img_pub = self.create_publisher(Image, "raw_img", qos_profile)
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        self.wrapped_img_pub = self.create_publisher(Image, "wrapped_img", qos_profile)
+        self.depth_map_pub = self.create_publisher(Image, "depth_map", qos_profile)
+        self.bg_depth_map_pub = self.create_publisher(Image, "bg_depth_map_pub", qos_profile)
+        self.diff_depth_map_pub = self.create_publisher(Image, "diff_depth_map", qos_profile)
+
+        self.timer = self.create_timer(0.01, self.timer_callback)
         self.bridge = CvBridge()
         self.finder = None
-        self.vt_sensor = None
+        self.vt = None
         self.manual_warp_params = [[258, 135], [389, 135], [383, 256], [264, 256]]
         self.scale = 1.5
         self.dsize = [240, 240]
+        self.calib_num = 50
 
         self.init_vt()
+
+        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        self.listener.start()
+
+
+    def on_press(self, key):
+        try:
+            key_char = key.char
+            self.get_logger().info(f'Published: "{key_char}"')
+        except AttributeError:
+            pass
+
+
+    def on_release(self, key):
+        if key == keyboard.Key.esc:
+            self.get_logger().info('Exiting...')
+            self.listener.stop()
+            rclpy.shutdown()
+
     def init_vt(self):
-        logger.info("init vt")
         self.finder = VTSDeviceFinder()
-        # 修改指定传感器SN
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
-        self.vt_sensor = GF225(config=config)
-        # 修改参数
-        self.vt_sensor.set_manual_warp_params(self.manual_warp_params, scale=self.scale, dsize=self.dsize)
+        self.vt = GF225(config=config, model_path=f"/home/sun/code/vitai/SDK-Release/models/2024-11-15-15-52_001.pth", device="cpu")
+        self.vt.set_manual_warp_params(self.manual_warp_params, scale=self.scale, dsize=self.dsize)
+
+        self.vt.start_backend()
+        self.vt.calibrate(self.calib_num)
 
 
     def timer_callback(self):
-        # get image from camera
-        ret, raw_frame, warpped_frame = self.vt_sensor.read()
+        raw_frame = self.vt.get_raw_frame()
+        wrapped_frame = self.vt.get_wrapped_frame()
 
-        # raw_frame = cv2.imread('/home/sun/Desktop/123.png')
+        self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
+        self.publish_image(self.wrapped_img_pub, wrapped_frame, encoding="bgr8")
+
+
+        if self.vt.is_background_depth_init():
+            self.vt.recon3d(wrapped_frame)
+            bg_depth_map_pub = self.vt.get_background_depth_map()
+            depth_map = self.vt.get_depth_map()
+            diff_depth_map = self.vt.get_diff_depth_map()
+
+            self.publish_image(self.bg_depth_map_pub, bg_depth_map_pub, encoding="32FC1")
+            self.publish_image(self.depth_map_pub, depth_map, encoding="32FC1")
+            self.publish_image(self.diff_depth_map_pub, diff_depth_map, encoding="32FC1")
+
+        if not self.vt.is_inited_marker():
+            self.vt.init_marker(wrapped_frame)
+        else:
+            flow = self.vt.tracking(wrapped_frame)
+            # self.vt.draw_flow(wrapped_frame, flow)
+            # print(f"vts.get_markers_offset(): {self.vt.get_markers_offset()}")
+            # print(f"vts.get_marker_vector(): {self.vt.get_marker_vector()}")
+            # print(f"vts.get_marker_max_offset(): {self.vt.get_marker_max_offset()}")
+            # print(f"vts.get_marker_mean_offset(): {self.vt.get_marker_mean_offset()}")
+            # print(f"vts.get_markers(): {self.vt.get_markers()}")
+        if self.vt.is_calibrate():
+            slip_state = self.vt.slip_state()
+
+
+
+    def publish_image(self, pub, image, encoding):
         # convert to ROS2 image message
-        ros_img = self.bridge.cv2_to_imgmsg(raw_frame, encoding="bgr8")
+        ros_img = self.bridge.cv2_to_imgmsg(image, encoding=encoding)
         # publish image
-        self.raw_img_pub.publish(ros_img)
-        self.get_logger().info('Publishing image')
+        pub.publish(ros_img)
+
+
 
 
 def main(args=None):
