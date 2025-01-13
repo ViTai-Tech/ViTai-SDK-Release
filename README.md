@@ -43,7 +43,7 @@ Python==3.8.*
 5. 安装完成后，即可使用examples中代码进行测试
 
    ```
-   如: python examples/find_sensor.py
+   如: python examples/gf225_find_sensor.py
    ```
 6. sdk文档在docs中
 
