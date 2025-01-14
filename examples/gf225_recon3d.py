@@ -28,15 +28,17 @@ def main():
     vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
 
     # 修改参数
-    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    # vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1, dsize=[240, 240])
     # vt.set_auto_warp_paddings(30, 40, 35, 30)
-    vt.enable_stream()
-    frame = vt.get_warpped_frame()
+    vt.start_backend()
+    vt.flush(30)
+    frame = vt.get_warped_frame()
     vt.set_background_depth(frame)
     while 1:
 
-        frame = vt.get_warpped_frame()
-        cv2.imshow(f"get_warpped_frame", frame)
+        frame = vt.get_warped_frame()
+        cv2.imshow(f"get_warped_frame", frame)
         cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
         if vt.is_background_depth_init():
             vt.recon3d(frame)
@@ -56,7 +58,7 @@ def main():
             vt.clear_background_depth()
             vt.set_background_depth(frame)
 
-    vt.disable_stream()
+    vt.stop_backend()
     vt.release()
 
 

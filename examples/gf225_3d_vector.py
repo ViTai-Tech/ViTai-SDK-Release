@@ -4,7 +4,6 @@
 Description  : 获取3D Vector 并展示3d点位
 '''
 
-import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,9 +34,10 @@ def main():
 
     vts.enable_stream()
     flag = False
+    ax = None
     vts.calibrate(50)
     while 1:
-        frame = vts.get_warpped_frame()
+        frame = vts.get_warped_frame()
         cv2.imshow("frame", frame)
         if vts.is_calibrate():
             vector = vts.get_3d_vector(frame)

@@ -18,34 +18,31 @@ def tracking():
     vt = GF225(config=config)
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.6, dsize=[240, 240])
+
+    vt.start_backend()
     vt.flush(30)
-
-    vts = [vt]
-
 
     while 1:
 
-        ret, raw_frame, warpped_frame = vt.read()
-        cv2.imshow("image", warpped_frame)
+        warped_frame = vt.get_warped_frame()
+        cv2.imshow("image", warped_frame)
 
         if not vt.is_inited_marker():
-            vt.init_marker(warpped_frame)
+            vt.init_marker(warped_frame)
         else:
-            flow = vt.tracking(warpped_frame)
-            vt.draw_flow(warpped_frame, flow)
-            # print(f"vts.get_markers_offset(): {vt.get_markers_offset()}")
-            # print(f"vts.get_marker_vector(): {vt.get_marker_vector().shape}")
-            # print(f"vts.get_marker_max_offset(): {vt.get_marker_max_offset()}")
-            # print(f"vts.get_marker_mean_offset(): {vt.get_marker_mean_offset()}")
-            # print(f"vts.get_markers(): {vt.get_markers()}")
-        cv2.imshow(f"tracking image", warpped_frame)
+            warped_frame_copy = warped_frame.copy()
+            flow = vt.tracking(warped_frame_copy)
+            vt.draw_flow(warped_frame_copy, flow)
+            print(f"vts.get_origin_markers(): {vt.get_origin_markers()}")
+            print(f"vts.get_markers(): {vt.get_markers()}")
+            cv2.imshow(f"tracking image", warped_frame_copy)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
             break
 
-    for vt in vts:
-        vt.release()
+    vt.release()
+    vt.stop_backend()
 
 
 if __name__ == "__main__":

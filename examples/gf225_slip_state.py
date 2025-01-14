@@ -41,12 +41,12 @@ def main():
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
     vt.start_backend()
-
+    vt.flush(30)
     calib_num = 50
     slip_state = vt.slip_state()
     vt.calibrate(calib_num) # 启动标定
     while 1:
-        frame = vt.get_warpped_frame()
+        frame = vt.get_warped_frame()
         if vt.is_calibrate():
             slip_state = vt.slip_state()
         frame_copy = frame.copy()

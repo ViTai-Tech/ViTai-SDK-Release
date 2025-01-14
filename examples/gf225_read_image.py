@@ -19,10 +19,10 @@ def auto_warp_mode():
 
 
     while 1:
-        ret, raw_frame, warpped_frame = vt.read()
+        ret, raw_frame, warped_frame = vt.read()
         if ret:
             cv2.imshow(f"raw_frame", raw_frame)
-            cv2.imshow(f"warpped_frame", warpped_frame)
+            cv2.imshow(f"warped_frame", warped_frame)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
@@ -42,11 +42,10 @@ def manual_warp_mode():
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
 
     while 1:
-        ret, raw_frame, warpped_frame = vt.read()
+        ret, raw_frame, warped_frame = vt.read()
         if ret:
             cv2.imshow(f"raw_frame", raw_frame)
-            cv2.imshow(f"warpped_frame", warpped_frame)
-        # print(f"WarpSrc: {vt.get_warp_params()}")
+            cv2.imshow(f"warped_frame", warped_frame)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):

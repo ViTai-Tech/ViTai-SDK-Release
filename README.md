@@ -4,7 +4,7 @@
 
 ## 环境要求
 
-Python==3.8.*
+Python==3.12.*
 
 > 支持linux平台
 
@@ -22,16 +22,16 @@ Python==3.8.*
 
 1. 下载`pyvitaisdk*.whl`文件
 
-2. 创建`python3.8`虚拟环境
+2. 创建`python3.12`虚拟环境
 
    ```bash
-   conda create -n py38 python=3.8
+   conda create -n py3 python=3.12
    ```
 
-3. 激活`python3.8`虚拟环境
+3. 激活`python3.12`虚拟环境
 
    ```
-   conda activate py38
+   conda activate py3
    ```
 
 4. 使用虚拟环境的pip安装sdk包，同时会联网下载其他所需的依赖库（需保证主机网络通畅）
@@ -45,7 +45,9 @@ Python==3.8.*
    ```
    如: python examples/gf225_find_sensor.py
    ```
-6. sdk文档在docs中
+6. sdk文档在docs文件夹中
+
+7. ros2使用示例在ros2文件夹中
 
 
 ## 反馈
