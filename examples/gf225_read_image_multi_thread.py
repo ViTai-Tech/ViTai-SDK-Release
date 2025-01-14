@@ -12,9 +12,9 @@ def process_sensor(data, frame_queue):
     t1 = time.time()
     loop = 100
     for _ in range(loop):
-        ret, raw_frame, wrapped_frame = vt.read()
+        ret, raw_frame, warpped_frame = vt.read()
         if ret:
-            frame_queue.put((sn, wrapped_frame))
+            frame_queue.put((sn, warpped_frame))
     cost = (time.time() - t1) / loop
     print(f'loop {loop} fps {1/cost}, cost {cost} s')
 

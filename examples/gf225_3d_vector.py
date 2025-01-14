@@ -37,7 +37,7 @@ def main():
     flag = False
     vts.calibrate(50)
     while 1:
-        frame = vts.get_wrapped_frame()
+        frame = vts.get_warpped_frame()
         cv2.imshow("frame", frame)
         if vts.is_calibrate():
             vector = vts.get_3d_vector(frame)

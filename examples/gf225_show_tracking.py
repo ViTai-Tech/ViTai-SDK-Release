@@ -25,20 +25,20 @@ def tracking():
 
     while 1:
 
-        ret, raw_frame, wrapped_frame = vt.read()
-        cv2.imshow("image", wrapped_frame)
+        ret, raw_frame, warpped_frame = vt.read()
+        cv2.imshow("image", warpped_frame)
 
         if not vt.is_inited_marker():
-            vt.init_marker(wrapped_frame)
+            vt.init_marker(warpped_frame)
         else:
-            flow = vt.tracking(wrapped_frame)
-            vt.draw_flow(wrapped_frame, flow)
-            print(f"vts.get_markers_offset(): {vt.get_markers_offset()}")
-            print(f"vts.get_marker_vector(): {vt.get_marker_vector()}")
-            print(f"vts.get_marker_max_offset(): {vt.get_marker_max_offset()}")
-            print(f"vts.get_marker_mean_offset(): {vt.get_marker_mean_offset()}")
-            print(f"vts.get_markers(): {vt.get_markers()}")
-        cv2.imshow(f"tracking image", wrapped_frame)
+            flow = vt.tracking(warpped_frame)
+            vt.draw_flow(warpped_frame, flow)
+            # print(f"vts.get_markers_offset(): {vt.get_markers_offset()}")
+            # print(f"vts.get_marker_vector(): {vt.get_marker_vector().shape}")
+            # print(f"vts.get_marker_max_offset(): {vt.get_marker_max_offset()}")
+            # print(f"vts.get_marker_mean_offset(): {vt.get_marker_mean_offset()}")
+            # print(f"vts.get_markers(): {vt.get_markers()}")
+        cv2.imshow(f"tracking image", warpped_frame)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):

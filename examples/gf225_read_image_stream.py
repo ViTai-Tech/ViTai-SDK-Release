@@ -23,7 +23,7 @@ def main():
     
     while 1:
         cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
-        cv2.imshow("get_wrapped_frame", vt.get_wrapped_frame())
+        cv2.imshow("get_warpped_frame", vt.get_warpped_frame())
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
             break

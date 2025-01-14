@@ -16,10 +16,16 @@ class VtPublisherNode(Node):
         super().__init__("VtPublisherNode")
         qos_profile = QoSProfile(depth=10)
         self.raw_img_pub = self.create_publisher(Image, "raw_img", qos_profile)
-        self.wrapped_img_pub = self.create_publisher(Image, "wrapped_img", qos_profile)
+        self.warpped_img_pub = self.create_publisher(Image, "warpped_img", qos_profile)
         self.depth_map_pub = self.create_publisher(Image, "depth_map", qos_profile)
-        self.bg_depth_map_pub = self.create_publisher(Image, "bg_depth_map_pub", qos_profile)
+        self.bg_depth_map_pub = self.create_publisher(Image, "bg_depth_map", qos_profile)
         self.diff_depth_map_pub = self.create_publisher(Image, "diff_depth_map", qos_profile)
+
+        self.markers_offset_pub = self.create_publisher(String, "markers_offset", qos_profile)
+        self.markers_offset_pub = self.create_publisher(String, "markers_offset", qos_profile)
+        self.markers_offset_pub = self.create_publisher(String, "markers_offset", qos_profile)
+        self.markers_offset_pub = self.create_publisher(String, "markers_offset", qos_profile)
+        self.markers_offset_pub = self.create_publisher(String, "markers_offset", qos_profile)
 
         self.slip_state_pub = self.create_publisher(String, "slip_state", qos_profile)
 
@@ -52,27 +58,26 @@ class VtPublisherNode(Node):
 
     def timer_callback(self):
         raw_frame = self.vt.get_raw_frame()
-        wrapped_frame = self.vt.get_wrapped_frame()
+        warpped_frame = self.vt.get_warpped_frame()
 
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
-        self.publish_image(self.wrapped_img_pub, wrapped_frame, encoding="bgr8")
+        self.publish_image(self.warpped_img_pub, warpped_frame, encoding="bgr8")
 
         if self.vt.is_background_depth_init():
-            self.vt.recon3d(wrapped_frame)
-            bg_depth_map_pub = self.vt.get_background_depth_map()
+            self.vt.recon3d(warpped_frame)
+            bg_depth_map = self.vt.get_background_depth_map()
             depth_map = self.vt.get_depth_map()
             diff_depth_map = self.vt.get_diff_depth_map()
 
-            self.publish_image(self.bg_depth_map_pub, bg_depth_map_pub, encoding="32FC1")
+            self.publish_image(self.bg_depth_map_pub, bg_depth_map, encoding="32FC1")
             self.publish_image(self.depth_map_pub, depth_map, encoding="32FC1")
             self.publish_image(self.diff_depth_map_pub, diff_depth_map, encoding="32FC1")
 
         if not self.vt.is_inited_marker():
-            self.vt.init_marker(wrapped_frame)
+            self.vt.init_marker(warpped_frame)
         else:
-            flow = self.vt.tracking(wrapped_frame)
-            # self.vt.draw_flow(wrapped_frame, flow)
-            # print(f"vts.get_markers_offset(): {self.vt.get_markers_offset()}")
+            self.vt.tracking(warpped_frame)
+            print(f"vts.get_markers_offset(): {self.vt.get_markers_offset()}")
             # print(f"vts.get_marker_vector(): {self.vt.get_marker_vector().shape}")
             # print(f"vts.get_marker_max_offset(): {self.vt.get_marker_max_offset()}")
             # print(f"vts.get_marker_mean_offset(): {self.vt.get_marker_mean_offset()}")
@@ -83,7 +88,7 @@ class VtPublisherNode(Node):
         if self.vt.is_calibrate():
             slip_state = self.vt.slip_state()
             self.publish_msg(self.slip_state_pub, slip_state.name)
-            self.get_logger().info(f'slip_state "{slip_state.name}"')
+            # self.get_logger().info(f'slip_state "{slip_state.name}"')
 
         if self.key == "e":
             self.get_logger().info(f'e self.key: "{self.key}"')
@@ -123,10 +128,10 @@ class VtPublisherNode(Node):
     def on_release(self, key):
         if key == keyboard.Key.esc:
             self.get_logger().info('Exiting...')
-            self.listener.stop()
-            rclpy.shutdown()
             self.vt.release()
             self.vt.stop_backend()
+            self.listener.stop()
+            rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)

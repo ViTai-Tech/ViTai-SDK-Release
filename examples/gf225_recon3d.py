@@ -31,12 +31,12 @@ def main():
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
     # vt.set_auto_warp_paddings(30, 40, 35, 30)
     vt.enable_stream()
-    frame = vt.get_wrapped_frame()
+    frame = vt.get_warpped_frame()
     vt.set_background_depth(frame)
     while 1:
 
-        frame = vt.get_wrapped_frame()
-        cv2.imshow(f"get_wrapped_frame", frame)
+        frame = vt.get_warpped_frame()
+        cv2.imshow(f"get_warpped_frame", frame)
         cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
         if vt.is_background_depth_init():
             vt.recon3d(frame)

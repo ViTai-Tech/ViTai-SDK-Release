@@ -46,7 +46,7 @@ def main():
     slip_state = vt.slip_state()
     vt.calibrate(calib_num) # 启动标定
     while 1:
-        frame = vt.get_wrapped_frame()
+        frame = vt.get_warpped_frame()
         if vt.is_calibrate():
             slip_state = vt.slip_state()
         frame_copy = frame.copy()
