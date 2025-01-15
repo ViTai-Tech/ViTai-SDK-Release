@@ -25,19 +25,20 @@ Python==3.12.*
 2. 创建`python3.12`虚拟环境
 
    ```bash
-   conda create -n py3 python=3.12
+   conda create -n py312 python=3.12
    ```
 
 3. 激活`python3.12`虚拟环境
 
    ```
-   conda activate py3
+   conda activate py312
    ```
 
 4. 使用虚拟环境的pip安装sdk包，同时会联网下载其他所需的依赖库（需保证主机网络通畅）
 
    ```
-   pip install wheel/pyvitaisdk-*.whl
+   pyvitaisdk-*_linux_aarch64.whl # linux平台 arrch64/arm64
+   pyvitaisdk-*_linux_x86_64.whl # linux平台 x86_64
    ```
 
 5. 安装完成后，即可使用examples中代码进行测试
