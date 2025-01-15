@@ -12,11 +12,15 @@ class VTSubscriberNode(Node):
         super().__init__('VTSubscriberNode')
         qos_profile = QoSProfile(depth=10)
         self.raw_img_sub = self.create_subscription(Image, 'raw_img', self.raw_image_callback, qos_profile)
-        self.warpped_img_sub = self.create_subscription(Image, 'warpped_img', self.warpped_image_callback, qos_profile)
+        self.warped_img_sub = self.create_subscription(Image, 'warped_img', self.warped_image_callback, qos_profile)
         self.depth_map_sub = self.create_subscription(Image, 'depth_map', self.depth_map_callback, qos_profile)
         self.bg_depth_map_sub = self.create_subscription(Image, 'bg_depth_map', self.bg_depth_map_callback, qos_profile)
         self.diff_depth_map_sub = self.create_subscription(Image, 'diff_depth_map', self.diff_depth_map_callback, qos_profile)
 
+        self.origin_markers_sub = self.create_subscription(String, 'origin_markers', self.origin_markers_callback, qos_profile)
+        self.markers_sub = self.create_subscription(String, 'markers', self.markers_callback, qos_profile)
+
+        self.vector_sub = self.create_subscription(String, 'vector', self.vector_callback, qos_profile)
         self.slip_state_sub = self.create_subscription(String, 'slip_state', self.slip_state_callback, qos_profile)
 
         self.bridge = CvBridge()
@@ -26,9 +30,9 @@ class VTSubscriberNode(Node):
         cv2.imshow('raw img', cv_image)
         cv2.waitKey(1)
 
-    def warpped_image_callback(self, msg):
+    def warped_image_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        cv2.imshow('warpped img', cv_image)
+        cv2.imshow('warped img', cv_image)
         cv2.waitKey(1)
 
     def depth_map_callback(self, msg):
@@ -46,6 +50,15 @@ class VTSubscriberNode(Node):
         cv2.imshow('diff depth map', cv_image)
         cv2.waitKey(1)
 
+    def markers_callback(self, msg):
+        self.get_logger().info('markers: {}'.format(msg.data))
+
+    def origin_markers_callback(self, msg):
+        self.get_logger().info('origin markers: {}'.format(msg.data))
+
+
+    def vector_callback(self, msg):
+        self.get_logger().info('vector: {}'.format(msg.data))
 
     def slip_state_callback(self, msg):
         self.get_logger().info('Slip State: {}'.format(msg.data))

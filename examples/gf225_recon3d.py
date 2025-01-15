@@ -32,7 +32,6 @@ def main():
     vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1, dsize=[240, 240])
     # vt.set_auto_warp_paddings(30, 40, 35, 30)
     vt.start_backend()
-    vt.flush(30)
     frame = vt.get_warped_frame()
     vt.set_background_depth(frame)
     while 1:

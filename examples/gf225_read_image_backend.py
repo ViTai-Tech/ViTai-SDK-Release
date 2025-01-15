@@ -19,7 +19,6 @@ def main():
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
     vt.start_backend()
-    vt.flush(30)
     while 1:
         cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
         cv2.imshow("get_warped_frame", vt.get_warped_frame())
