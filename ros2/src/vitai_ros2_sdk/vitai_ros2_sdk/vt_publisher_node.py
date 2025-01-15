@@ -90,8 +90,9 @@ class VtPublisherNode(Node):
 
         if self.vt.is_calibrate():
             vector = self.vt.get_3d_vector(warped_frame)
-            vector_str = np.array2string(vector)
-            self.publish_msg(self.vector_pub, vector_str)
+            if vector is not None:
+                vector_str = np.array2string(vector)
+                self.publish_msg(self.vector_pub, vector_str)
 
             slip_state = self.vt.slip_state()
             self.publish_msg(self.slip_state_pub, slip_state.name)

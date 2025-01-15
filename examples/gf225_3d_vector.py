@@ -41,6 +41,8 @@ def main():
         cv2.imshow("frame", frame)
         if vts.is_calibrate():
             vector = vts.get_3d_vector(frame)
+            if vector is None:
+                continue
             x = vector[:, 0]  # 提取 x 坐标
             y = vector[:, 1]  # 提取 y 坐标
             z = vector[:, 2]  # 提取 z 坐标
