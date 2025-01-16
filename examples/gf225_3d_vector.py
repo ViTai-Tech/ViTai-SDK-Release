@@ -23,7 +23,10 @@ def get_project_root():
 project_root = get_project_root()
 print(f"Project root directory: {project_root}")
 
-
+"""
+    使用此example需安装matplotlib
+    pip install matplotlib
+"""
 def main():
     vtsd = VTSDeviceFinder()
 
