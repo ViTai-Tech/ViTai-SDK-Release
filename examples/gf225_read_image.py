@@ -56,6 +56,6 @@ def manual_warp_mode():
 
 if __name__ == "__main__":
 
-    auto_warp_mode()
+    # auto_warp_mode()
 
-    # manual_warp_mode()
+    manual_warp_mode()

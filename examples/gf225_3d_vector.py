@@ -28,19 +28,19 @@ def main():
     vtsd = VTSDeviceFinder()
 
     config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
-    vts = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
+    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
 
-    vts.set_manual_warp_params([[233, 92], [427, 92], [412, 272], [243, 272]], 1.0, dsize=[240, 240])
+    vt.set_manual_warp_params([[233, 92], [427, 92], [412, 272], [243, 272]], 1.0, dsize=[240, 240])
 
-    vts.enable_stream()
+    vt.start_backend()
     flag = False
     ax = None
-    vts.calibrate(50)
+    vt.calibrate(50)
     while 1:
-        frame = vts.get_warped_frame()
+        frame = vt.get_warped_frame()
         cv2.imshow("frame", frame)
-        if vts.is_calibrate():
-            vector = vts.get_3d_vector(frame)
+        if vt.is_calibrate():
+            vector = vt.get_3d_vector(frame)
             if vector is None:
                 continue
             x = vector[:, 0]  # 提取 x 坐标
@@ -71,8 +71,8 @@ def main():
         if key == ord("q"):
             break
 
-    vts.release()
-    vts.disable_stream()
+    vt.release()
+    vt.stop_backend()
 
 
 if __name__ == "__main__":
