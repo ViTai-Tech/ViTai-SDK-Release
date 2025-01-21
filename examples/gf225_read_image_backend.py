@@ -11,10 +11,10 @@ from pyvitaisdk import GF225, VTSDeviceFinder
 
 def main():
 
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
     vt = GF225(config=config)
     # 修改参数
     vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
@@ -22,7 +22,7 @@ def main():
     while 1:
         cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
         cv2.imshow("get_warped_frame", vt.get_warped_frame())
-        key = cv2.waitKey(1) & 255
+        key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 

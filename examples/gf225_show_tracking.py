@@ -11,13 +11,13 @@ from pyvitaisdk import GF225, VTSDeviceFinder
 
 def tracking():
 
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
     vt = GF225(config=config)
     # 修改参数
-    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.6, dsize=[240, 240])
+    vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1.0, dsize=[240, 240])
 
     vt.start_backend()
 
@@ -32,11 +32,11 @@ def tracking():
             warped_frame_copy = warped_frame.copy()
             flow = vt.tracking(warped_frame_copy)
             vt.draw_flow(warped_frame_copy, flow)
-            print(f"vts.get_origin_markers(): {vt.get_origin_markers()}")
-            print(f"vts.get_markers(): {vt.get_markers()}")
+            # print(f"vts.get_origin_markers(): {vt.get_origin_markers()}")
+            # print(f"vts.get_markers(): {vt.get_markers()}")
             cv2.imshow(f"tracking image", warped_frame_copy)
 
-        key = cv2.waitKey(1) & 255
+        key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 

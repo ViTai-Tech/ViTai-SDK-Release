@@ -17,18 +17,17 @@ def get_project_root():
 project_root = get_project_root()
 print(f"Project root directory: {project_root}")
 
-"""
-    运行此example需要重新安装opencv
-    conda install pyqt
-    conda install -c conda-forge opencv==4.10.0
-"""
+
 def main():
 
-    vtsd = VTSDeviceFinder()
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
-    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
-    vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1, dsize=[240, 240])
-    vis = Visualizer(gf225=vt)
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
+    gf225 = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
+
+    gf225.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1, dsize=[240, 240])
+    vis = Visualizer(gf225=gf225)
     vis.show()
 
 

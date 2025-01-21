@@ -1,17 +1,10 @@
-#!/usr/bin/env python3
-# coding=utf-8
-'''
-Description  : 获取3D Vector 并展示3d点位
-'''
-
-import cv2
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 import numpy as np
+import cv2
 from pyvitaisdk import GF225, VTSDeviceFinder
 from pathlib import Path
-
 np.set_printoptions(suppress=True, precision=8)  # 精度为8位
-
 
 def get_project_root():
     current_file_path = Path(__file__).resolve()
@@ -19,64 +12,76 @@ def get_project_root():
     root = current_dir.parent
     return root
 
-
 project_root = get_project_root()
 print(f"Project root directory: {project_root}")
 
-"""
-    使用此example需安装matplotlib
-    pip install matplotlib
-"""
+
+# 创建一个包含20个逐渐变深的渐变色的颜色映射
+colors = [(1, 0, 0), (0, 0, 0)]
+cmap = LinearSegmentedColormap.from_list('custom_cmap', colors, N=20)
+# 创建边界规范
+bounds = np.linspace(0, 1, 21)  # 21个边界，形成20个区间
+norm = BoundaryNorm(bounds, cmap.N)
+
 def main():
-    vtsd = VTSDeviceFinder()
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
+    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
-    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
-
-    vt.set_manual_warp_params([[233, 92], [427, 92], [412, 272], [243, 272]], 1.0, dsize=[240, 240])
+    # 设置手动 warp 参数
+    vt.set_manual_warp_params([[154, 75], [465, 71], [437, 324], [180, 325]], 1, dsize=[240, 240])
 
     vt.start_backend()
+    vt.calibrate(10)
+
     flag = False
     ax = None
-    vt.calibrate(50)
-    while 1:
+    minx, maxx, miny, maxy = 0, 0, 0, 0
+    # 初始化 3D 图形窗口
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    while True:
         frame = vt.get_warped_frame()
-        cv2.imshow("frame", frame)
+        # cv2.imshow("frame", frame)
         if vt.is_calibrate():
             vector = vt.get_3d_vector(frame)
             if vector is None:
                 continue
-            x = vector[:, 0]  # 提取 x 坐标
-            y = vector[:, 1]  # 提取 y 坐标
-            z = vector[:, 2]  # 提取 z 坐标
+
+            # 提取 x, y, z 坐标
+            x = vector[:, 0]
+            y = vector[:, 1]
+            z = vector[:, 2]
 
             if not flag:
-                # 初始化 3D 图形窗口
-                fig = plt.figure()
-                ax = fig.add_subplot(111, projection='3d')
-                ax.set_zlim(0, 5)  # 设置 z 轴从 0 到 5
+                minx = int(np.min(x) / 1.1)
+                maxx = int(np.max(x) * 1.1)
+                miny = int(np.min(y) / 1.1)
+                maxy = int(np.max(y) * 1.1)
                 flag = True
-            else:
-                ax.clear()  # 清除上一帧内容
-                # 绘制散点图
-                ax.set_zlim(0, 5)  # 设置 z 轴从 0 到 5
-                ax.scatter(x, y, z, c=z, cmap='viridis', s=20)
 
-                ax.set_title('3D Point Visualization')
-                ax.set_xlabel('X Axis')
-                ax.set_ylabel('Y Axis')
-                ax.set_zlabel('Z Axis')
+            # 更新散点图数据
+            ax.clear()  # 清除上一帧内容
+            ax.set_xlim(minx, maxx)
+            ax.set_ylim(miny, maxy)
+            ax.set_zlim(0, 1)
+            ax.scatter(x, y, z, c=z, cmap=cmap, norm=norm, s=20)
+            ax.set_title('3D Point Visualization')
+            ax.set_xlabel('X Axis')
+            ax.set_ylabel('Y Axis')
+            ax.set_zlabel('Z Axis')
 
-                plt.pause(0.001)  # 暂停以更新显示
+            plt.pause(0.001)  # 暂停以更新显示
 
         key = cv2.waitKey(1) & 0xFF
-
-        if key == ord("q"):
+        if key == 27 or key == ord("q"):
             break
 
     vt.release()
     vt.stop_backend()
-
+    plt.close('all')  # 关闭所有图形窗口
 
 if __name__ == "__main__":
     main()

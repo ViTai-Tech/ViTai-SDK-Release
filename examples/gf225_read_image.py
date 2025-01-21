@@ -9,10 +9,10 @@ from pyvitaisdk import GF225, VTSDeviceFinder
 
 
 def auto_warp_mode():
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
     vt = GF225(config=config)
     vt.set_auto_warp_paddings(30, 40, 35, 30)
     vt.flush(30)
@@ -33,13 +33,15 @@ def auto_warp_mode():
 
 def manual_warp_mode():
 
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
     vt = GF225(config=config)
     # 修改参数
-    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    # vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    vt.set_manual_warp_params([[167, 77], [475, 71], [448, 320], [197, 325]], 1, dsize=[240, 240])  # 0016
+
 
     while 1:
         ret, raw_frame, warped_frame = vt.read()

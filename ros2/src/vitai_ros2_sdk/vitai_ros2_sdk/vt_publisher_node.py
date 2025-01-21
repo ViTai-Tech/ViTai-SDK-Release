@@ -18,8 +18,6 @@ class VtPublisherNode(Node):
         self.raw_img_pub = self.create_publisher(Image, "raw_img", qos_profile)
         self.warped_img_pub = self.create_publisher(Image, "warped_img", qos_profile)
         self.depth_map_pub = self.create_publisher(Image, "depth_map", qos_profile)
-        self.bg_depth_map_pub = self.create_publisher(Image, "bg_depth_map", qos_profile)
-        self.diff_depth_map_pub = self.create_publisher(Image, "diff_depth_map", qos_profile)
 
         self.origin_markers_pub = self.create_publisher(String, "origin_markers", qos_profile)
         self.markers_pub = self.create_publisher(String, "markers", qos_profile)
@@ -31,10 +29,10 @@ class VtPublisherNode(Node):
         self.bridge = CvBridge()
         self.finder = None
         self.vt = None
-        self.manual_warp_params = [[258, 135], [389, 135], [383, 256], [264, 256]]
-        self.scale = 1.5
+        self.manual_warp_params = [[154, 75], [465, 71], [437, 324], [180, 325]]
+        self.scale = 1
         self.dsize = [240, 240]
-        self.calib_num = 50
+        self.calib_num = 10
         self.model_path = model_path
         self.device = device
         self.init_vt()
@@ -62,15 +60,10 @@ class VtPublisherNode(Node):
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
         self.publish_image(self.warped_img_pub, warped_frame, encoding="bgr8")
 
-        if self.vt.is_background_depth_init():
+        if self.vt.is_background_init():
             self.vt.recon3d(warped_frame)
-            bg_depth_map = self.vt.get_background_depth_map()
             depth_map = self.vt.get_depth_map()
-            diff_depth_map = self.vt.get_diff_depth_map()
-
-            self.publish_image(self.bg_depth_map_pub, bg_depth_map, encoding="32FC1")
             self.publish_image(self.depth_map_pub, depth_map, encoding="32FC1")
-            self.publish_image(self.diff_depth_map_pub, diff_depth_map, encoding="32FC1")
 
         if not self.vt.is_inited_marker():
             self.vt.init_marker(warped_frame)
@@ -140,7 +133,7 @@ class VtPublisherNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    model_path = f"/home/sun/code/vitai/SDK-Release/models/2024-11-15-15-52_001.pth"
+    model_path = f"/home/sun/code/vitai/SDK-Release/models/best.pth"
     device = "cpu"
     node = VtPublisherNode(model_path=model_path, device=device)
     rclpy.spin(node)

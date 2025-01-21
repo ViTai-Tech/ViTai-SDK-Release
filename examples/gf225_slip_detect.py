@@ -33,15 +33,15 @@ def put_text_to_image(img, text, origin=(10,30)) -> None:
 
 def main():
 
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
-    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
+    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
     # 修改参数
-    vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
+    vt.set_manual_warp_params([[167, 64], [485, 73], [453, 294], [189, 292]], 1.0, dsize=[240, 240])
     vt.start_backend()
-    calib_num = 50
+    calib_num = 10
     slip_state = vt.slip_state()
     vt.calibrate(calib_num) # 启动标定
     while 1:
@@ -52,7 +52,7 @@ def main():
         put_text_to_image(frame_copy, slip_state.name)
         cv2.imshow(f"frame", frame_copy)
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
+        if key == 27 or key == ord("q"):
             break
         elif key == ord("e"):
             # 按e开启滑动检测

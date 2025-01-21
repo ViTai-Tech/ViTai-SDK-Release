@@ -4,6 +4,8 @@
 Description  : 深度恢复示例
 """
 import cv2
+import numpy as np
+
 from pyvitaisdk import GF225, VTSDeviceFinder
 from pathlib import Path
 
@@ -19,43 +21,46 @@ project_root = get_project_root()
 print(f"Project root directory: {project_root}")
 
 
+def put_text_to_image(img, text, origin=(10,30)) -> None:
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    color = (255, 255, 255)
+    thickness = 1
+    cv2.putText(img, text, origin, font, font_scale, color, thickness, cv2.LINE_AA)
+
 def main():
 
-    vtsd = VTSDeviceFinder()
-
-    # 修改指定传感器SN
-    config = vtsd.get_device_by_sn(vtsd.get_sns()[0])
-    vt = GF225(config=config, model_path=f"{project_root}/models/2024-11-15-15-52_001.pth", device="cpu")
+    finder = VTSDeviceFinder()
+    sn = finder.get_sns()[0]
+    print(f"sn: {sn}")
+    config = finder.get_device_by_sn(sn)
+    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
     # 修改参数
-    # vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
-    vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1, dsize=[240, 240])
-    # vt.set_auto_warp_paddings(30, 40, 35, 30)
+    # vt.set_manual_warp_params([[154, 75], [465, 71], [437, 324], [180, 325]], 1, dsize=[240, 240])  # 0020
+    vt.set_manual_warp_params([[167, 77], [475, 71], [448, 320], [197, 325]], 1, dsize=[240, 240])  # 0016
     vt.start_backend()
-    frame = vt.get_warped_frame()
-    vt.set_background_depth(frame)
+    bg = vt.get_warped_frame()
+    vt.set_background(bg)
     while 1:
-
         frame = vt.get_warped_frame()
-        cv2.imshow(f"get_warped_frame", frame)
-        cv2.imshow(f"get_raw_frame", vt.get_raw_frame())
-        if vt.is_background_depth_init():
+        if vt.is_background_init():
             vt.recon3d(frame)
-            background_depth_map = vt.get_background_depth_map()
             depth_map = vt.get_depth_map()
-            diff_depth_map = vt.get_diff_depth_map()
             cv2.imshow(f"depth_map", depth_map)
-            cv2.imshow(f"background_depth_map", background_depth_map)
-            cv2.imshow(f"diff_depth_map", diff_depth_map)
+            cv2.imshow(f"diff image", cv2.subtract(frame, bg))
 
+            frame_copy = frame.copy()
+            put_text_to_image(frame_copy, str(np.max(depth_map)))
+            cv2.imshow(f"warped_frame", frame_copy)
 
-        key = cv2.waitKey(1) & 255
+        key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
         elif key == ord("e"):
-            # 按e 重新设置背景深度图
-            vt.clear_background_depth()
-            vt.set_background_depth(frame)
+            # 按e 重新设置背景图
+            vt.clear_background()
+            vt.set_background(frame)
 
     vt.stop_backend()
     vt.release()
