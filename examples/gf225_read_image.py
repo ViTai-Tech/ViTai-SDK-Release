@@ -10,6 +10,9 @@ from pyvitaisdk import GF225, VTSDeviceFinder
 
 def auto_warp_mode():
     finder = VTSDeviceFinder()
+    if len(finder.get_sns()) == 0:
+        print("No device found.")
+        return
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
@@ -34,6 +37,9 @@ def auto_warp_mode():
 def manual_warp_mode():
 
     finder = VTSDeviceFinder()
+    if len(finder.get_sns()) == 0:
+        print("No device found.")
+        return
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)

@@ -31,6 +31,9 @@ def put_text_to_image(img, text, origin=(10,30)) -> None:
 def main():
 
     finder = VTSDeviceFinder()
+    if len(finder.get_sns()) == 0:
+        print("No device found.")
+        return
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
