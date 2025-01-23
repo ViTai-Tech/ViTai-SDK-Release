@@ -16,13 +16,16 @@ def auto_warp_mode():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config)
-    vt.set_auto_warp_paddings(30, 40, 35, 30)
-    vt.flush(30)
-
+    gf225 = GF225(config=config)
+    # 修改参数
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'auto'
+    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.flush(30)
 
     while 1:
-        ret, raw_frame, warped_frame = vt.read()
+        ret, raw_frame, warped_frame = gf225.read()
         if ret:
             cv2.imshow(f"raw_frame", raw_frame)
             cv2.imshow(f"warped_frame", warped_frame)
@@ -31,7 +34,7 @@ def auto_warp_mode():
         if key == 27 or key == ord("q"):
             break
 
-    vt.release()
+    gf225.release()
 
 
 def manual_warp_mode():
@@ -43,14 +46,17 @@ def manual_warp_mode():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config)
+    gf225 = GF225(config=config)
     # 修改参数
-    # vt.set_manual_warp_params([[258, 135], [389, 135], [383, 256], [264, 256]], 1.5, dsize=[240, 240])
-    vt.set_manual_warp_params([[167, 77], [475, 71], [448, 320], [197, 325]], 1, dsize=[240, 240])  # 0016
-
+    corner_points = [[150, 320], [464, 73], [435, 341], [183, 339]]
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'manual'
+    # mode = 'auto'
+    gf225.set_warp_params(corner_points=corner_points, offset=offset, dsize=dsize, mode=mode)
 
     while 1:
-        ret, raw_frame, warped_frame = vt.read()
+        ret, raw_frame, warped_frame = gf225.read()
         if ret:
             cv2.imshow(f"raw_frame", raw_frame)
             cv2.imshow(f"warped_frame", warped_frame)
@@ -59,11 +65,11 @@ def manual_warp_mode():
         if key == 27 or key == ord("q"):
             break
 
-    vt.release()
+    gf225.release()
 
 
 if __name__ == "__main__":
 
-    # auto_warp_mode()
+    auto_warp_mode()
 
-    manual_warp_mode()
+    # manual_warp_mode()

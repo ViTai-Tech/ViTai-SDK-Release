@@ -31,13 +31,16 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
+    gf225 = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
-    # 设置手动 warp 参数
-    vt.set_manual_warp_params([[154, 75], [465, 71], [437, 324], [180, 325]], 1, dsize=[240, 240])
+    # 修改参数
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'auto'
+    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
 
-    vt.start_backend()
-    vt.calibrate(10)
+    gf225.start_backend()
+    gf225.calibrate(10)
 
     flag = False
     ax = None
@@ -46,10 +49,10 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     while True:
-        frame = vt.get_warped_frame()
-        # cv2.imshow("frame", frame)
-        if vt.is_calibrate():
-            vector = vt.get_3d_vector(frame)
+        frame = gf225.get_warped_frame()
+        cv2.imshow("image", frame)
+        if gf225.is_calibrate():
+            vector = gf225.get_3d_vector(frame)
             if vector is None:
                 continue
 
@@ -81,9 +84,8 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
-
-    vt.release()
-    vt.stop_backend()
+    gf225.release()
+    gf225.stop_backend()
     plt.close('all')  # 关闭所有图形窗口
 
 if __name__ == "__main__":

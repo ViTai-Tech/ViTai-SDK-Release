@@ -40,8 +40,10 @@ def main():
     vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
     # 修改参数
-    # vt.set_manual_warp_params([[154, 75], [465, 71], [437, 324], [180, 325]], 1, dsize=[240, 240])  # 0020
-    vt.set_manual_warp_params([[167, 77], [475, 71], [448, 320], [197, 325]], 1, dsize=[240, 240])  # 0016
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'auto'
+    vt.set_warp_params(offset=offset, dsize=dsize, mode=mode)
     vt.start_backend()
     bg = vt.get_warped_frame()
     vt.set_background(bg)

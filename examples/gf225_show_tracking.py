@@ -18,33 +18,35 @@ def tracking():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config)
+    gf225 = GF225(config=config)
     # 修改参数
-    vt.set_manual_warp_params([[170, 80], [478, 78], [446, 332], [188, 318]], 1.0, dsize=[240, 240])
-
-    vt.start_backend()
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'auto'
+    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.start_backend()
 
     while 1:
 
-        warped_frame = vt.get_warped_frame()
+        warped_frame = gf225.get_warped_frame()
         cv2.imshow("image", warped_frame)
 
-        if not vt.is_inited_marker():
-            vt.init_marker(warped_frame)
+        if not gf225.is_inited_marker():
+            gf225.init_marker(warped_frame)
         else:
             warped_frame_copy = warped_frame.copy()
-            flow = vt.tracking(warped_frame_copy)
-            vt.draw_flow(warped_frame_copy, flow)
-            # print(f"vts.get_origin_markers(): {vt.get_origin_markers()}")
-            # print(f"vts.get_markers(): {vt.get_markers()}")
+            flow = gf225.tracking(warped_frame_copy)
+            gf225.draw_flow(warped_frame_copy, flow)
+            # print(f"vts.get_origin_markers(): {gf225.get_origin_markers()}")
+            # print(f"vts.get_markers(): {gf225.get_markers()}")
             cv2.imshow(f"tracking image", warped_frame_copy)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 
-    vt.release()
-    vt.stop_backend()
+    gf225.release()
+    gf225.stop_backend()
 
 
 if __name__ == "__main__":

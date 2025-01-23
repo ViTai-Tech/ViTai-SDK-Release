@@ -40,17 +40,20 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
+    gf225 = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
     # 修改参数
-    vt.set_manual_warp_params([[167, 64], [485, 73], [453, 294], [189, 292]], 1.0, dsize=[240, 240])
-    vt.start_backend()
+    offset = [5, 45, 25, 25]
+    dsize = 240
+    mode = 'auto'
+    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.start_backend()
     calib_num = 10
-    slip_state = vt.slip_state()
-    vt.calibrate(calib_num) # 启动标定
+    slip_state = gf225.slip_state()
+    gf225.calibrate(calib_num) # 启动标定
     while 1:
-        frame = vt.get_warped_frame()
-        if vt.is_calibrate():
-            slip_state = vt.slip_state()
+        frame = gf225.get_warped_frame()
+        if gf225.is_calibrate():
+            slip_state = gf225.slip_state()
         frame_copy = frame.copy()
         put_text_to_image(frame_copy, slip_state.name)
         cv2.imshow(f"frame", frame_copy)
@@ -59,15 +62,15 @@ def main():
             break
         elif key == ord("e"):
             # 按e开启滑动检测
-            vt.enable_slip_detect()
+            gf225.enable_slip_detect()
         elif key == ord("d"):
             # 按d关闭滑动检测
-            vt.disable_slip_detect()
+            gf225.disable_slip_detect()
         elif key == ord('r'):
-            vt.re_calibrate(calib_num) # 重新标定
+            gf225.re_calibrate(calib_num) # 重新标定
 
-    vt.stop_backend()
-    vt.release()
+    gf225.stop_backend()
+    gf225.release()
 
 if __name__ == "__main__":
 
