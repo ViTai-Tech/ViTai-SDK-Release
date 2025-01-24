@@ -29,9 +29,10 @@ class VtPublisherNode(Node):
         self.bridge = CvBridge()
         self.finder = None
         self.vt = None
-        self.manual_warp_params = [[154, 75], [465, 71], [437, 324], [180, 325]]
         self.scale = 1
-        self.dsize = [240, 240]
+        self.dsize = 240
+        self.offset = [5, 45, 25, 25]
+        self.mode = 'auto'
         self.calib_num = 10
         self.model_path = model_path
         self.device = device
@@ -44,33 +45,32 @@ class VtPublisherNode(Node):
     def init_vt(self):
         self.finder = VTSDeviceFinder()
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
-        self.vt = GF225(config=config, model_path=self.model_path, device=self.device)
-        self.vt.set_manual_warp_params(self.manual_warp_params, scale=self.scale, dsize=self.dsize)
-
-        self.vt.start_backend()
-        self.vt.calibrate(self.calib_num)
+        self.gf225 = GF225(config=config, model_path=self.model_path, device=self.device)
+        self.gf225.set_warp_params(offset=self.offset, dsize=self.dsize, mode=self.mode)
+        self.gf225.start_backend()
+        self.gf225.calibrate(self.calib_num)
 
     def timer_callback(self):
         try:
-            raw_frame = self.vt.get_raw_frame()
-            warped_frame = self.vt.get_warped_frame()
+            raw_frame = self.gf225.get_raw_frame()
+            warped_frame = self.gf225.get_warped_frame()
         except Exception as e:
             self.get_logger().error(f"Failed to get frames: {e}")
             return
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
         self.publish_image(self.warped_img_pub, warped_frame, encoding="bgr8")
 
-        if self.vt.is_background_init():
-            self.vt.recon3d(warped_frame)
-            depth_map = self.vt.get_depth_map()
+        if self.gf225.is_background_init():
+            self.gf225.recon3d(warped_frame)
+            depth_map = self.gf225.get_depth_map()
             self.publish_image(self.depth_map_pub, depth_map, encoding="32FC1")
 
-        if not self.vt.is_inited_marker():
-            self.vt.init_marker(warped_frame)
+        if not self.gf225.is_inited_marker():
+            self.gf225.init_marker(warped_frame)
         else:
-            self.vt.tracking(warped_frame)
-            origin_markers = self.vt.get_origin_markers()
-            markers = self.vt.get_markers()
+            self.gf225.tracking(warped_frame)
+            origin_markers = self.gf225.get_origin_markers()
+            markers = self.gf225.get_markers()
 
             origin_markers_str = np.array2string(origin_markers)
             markers_str = np.array2string(markers)
@@ -81,13 +81,13 @@ class VtPublisherNode(Node):
             self.publish_msg(self.origin_markers_pub, origin_markers_str)
             self.publish_msg(self.markers_pub, markers_str)
 
-        if self.vt.is_calibrate():
-            vector = self.vt.get_3d_vector(warped_frame)
+        if self.gf225.is_calibrate():
+            vector = self.gf225.get_3d_vector(warped_frame)
             if vector is not None:
                 vector_str = np.array2string(vector)
                 self.publish_msg(self.vector_pub, vector_str)
 
-            slip_state = self.vt.slip_state()
+            slip_state = self.gf225.slip_state()
             self.publish_msg(self.slip_state_pub, slip_state.name)
             # self.get_logger().info(f'slip_state "{slip_state.name}"')
 
@@ -95,12 +95,12 @@ class VtPublisherNode(Node):
             self.get_logger().info(f'self.key: "{self.key}"')
             if self.key == "e":
                 # 按e开启滑动检测
-                self.vt.enable_slip_detect()
+                self.gf225.enable_slip_detect()
             elif self.key == "d":
                 # 按d关闭滑动检测
-                self.vt.disable_slip_detect()
+                self.gf225.disable_slip_detect()
             elif self.key == 'r':
-                self.vt.re_calibrate(self.calib_num)  # 重新标定
+                self.gf225.re_calibrate(self.calib_num)  # 重新标定
 
         self.key = ''
 
@@ -125,8 +125,8 @@ class VtPublisherNode(Node):
     def on_release(self, key):
         if key == keyboard.Key.esc:
             self.get_logger().info('Exiting...')
-            self.vt.release()
-            self.vt.stop_backend()
+            self.gf225.release()
+            self.gf225.stop_backend()
             self.listener.stop()
             rclpy.shutdown()
 

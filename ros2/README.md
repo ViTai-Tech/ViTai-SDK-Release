@@ -5,6 +5,11 @@
 
 Python==3.12.*
 
+## 需安装pynout
+```
+pip install pynout
+```
+
 ## 如何使用
 
 ```bash
@@ -18,7 +23,7 @@ Python==3.12.*
 ## 添加conda python 环境
 ```
     #参考
-    export PYTHONPATH=$PYTHONPATH:/home/root/miniconda3/envs/py312_whl/lib/python3.12/site-packages 
+    export PYTHONPATH=$PYTHONPATH:/home/root/miniconda3/envs/py312/lib/python3.12/site-packages 
 ```
 
 
