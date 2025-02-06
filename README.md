@@ -6,15 +6,17 @@
 
 Python==3.12.*
 
-> 支持linux平台
+```
+支持ubuntu 24.04
+RK3588、Jetson Orin NX
+```
 
 ## 如何使用
 
-### 系统环境要求
-
-#### Linux
-
 需要确保系统已经安装了v4l-utils
+```
+sudo apt-get install v4l-utils
+```
 
 ------
 
@@ -46,9 +48,8 @@ Python==3.12.*
    ```
    如: python examples/gf225_find_sensor.py
    ```
-6. sdk文档在docs文件夹中
 
-7. ros2使用示例在ros2文件夹中
+6. ros2使用示例在ros2文件夹中
 
 
 ## 反馈

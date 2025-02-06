@@ -43,7 +43,6 @@ def main():
     gf225.calibrate(10)
 
     flag = False
-    ax = None
     minx, maxx, miny, maxy = 0, 0, 0, 0
     # 初始化 3D 图形窗口
     fig = plt.figure()

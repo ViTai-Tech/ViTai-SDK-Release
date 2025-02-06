@@ -37,21 +37,21 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    vt = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
+    gf225 = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
     # 修改参数
     offset = [5, 45, 25, 25]
     dsize = 240
     mode = 'auto'
-    vt.set_warp_params(offset=offset, dsize=dsize, mode=mode)
-    vt.start_backend()
-    bg = vt.get_warped_frame()
-    vt.set_background(bg)
+    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.start_backend()
+    bg = gf225.get_warped_frame()
+    gf225.set_background(bg)
     while 1:
-        frame = vt.get_warped_frame()
-        if vt.is_background_init():
-            vt.recon3d(frame)
-            depth_map = vt.get_depth_map()
+        frame = gf225.get_warped_frame()
+        if gf225.is_background_init():
+            gf225.recon3d(frame)
+            depth_map = gf225.get_depth_map()
             cv2.imshow(f"depth_map", depth_map)
             cv2.imshow(f"diff image", cv2.subtract(frame, bg))
 
@@ -64,11 +64,11 @@ def main():
             break
         elif key == ord("e"):
             # 按e 重新设置背景图
-            vt.clear_background()
-            vt.set_background(frame)
+            gf225.clear_background()
+            gf225.set_background(frame)
 
-    vt.stop_backend()
-    vt.release()
+    gf225.stop_backend()
+    gf225.release()
 
 
 if __name__ == "__main__":

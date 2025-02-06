@@ -22,20 +22,18 @@ def auto_warp_mode():
     dsize = 240
     mode = 'auto'
     gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
-    gf225.flush(30)
+    gf225.start_backend()
 
     while 1:
-        ret, raw_frame, warped_frame = gf225.read()
-        if ret:
-            cv2.imshow(f"raw_frame", raw_frame)
-            cv2.imshow(f"warped_frame", warped_frame)
+        cv2.imshow(f"get_raw_frame", gf225.get_raw_frame())
+        cv2.imshow("get_warped_frame", gf225.get_warped_frame())
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
             break
 
     gf225.release()
-
+    gf225.stop_backend()
 
 def manual_warp_mode():
 
@@ -48,24 +46,24 @@ def manual_warp_mode():
     config = finder.get_device_by_sn(sn)
     gf225 = GF225(config=config)
     # 修改参数
-    corner_points = [[150, 320], [464, 73], [435, 341], [183, 339]]
+    corner_points = [[150, 78], [464, 73], [435, 341], [183, 339]] # 左上 右上 右下 左下
     offset = [5, 45, 25, 25]
     dsize = 240
     mode = 'manual'
     # mode = 'auto'
     gf225.set_warp_params(corner_points=corner_points, offset=offset, dsize=dsize, mode=mode)
+    gf225.start_backend()
 
     while 1:
-        ret, raw_frame, warped_frame = gf225.read()
-        if ret:
-            cv2.imshow(f"raw_frame", raw_frame)
-            cv2.imshow(f"warped_frame", warped_frame)
+        cv2.imshow(f"get_raw_frame", gf225.get_raw_frame())
+        cv2.imshow("get_warped_frame", gf225.get_warped_frame())
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 
     gf225.release()
+    gf225.stop_backend()
 
 
 if __name__ == "__main__":
