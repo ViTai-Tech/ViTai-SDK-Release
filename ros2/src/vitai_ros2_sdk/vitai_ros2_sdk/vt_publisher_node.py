@@ -29,9 +29,9 @@ class VtPublisherNode(Node):
         self.bridge = CvBridge()
         self.finder = None
         self.vt = None
-        self.scale = 1
-        self.dsize = 240
-        self.offset = [5, 45, 25, 25]
+        # self.scale = 1
+        # self.dsize = 240
+        # self.offset = [5, 45, 25, 25]
         self.mode = 'auto'
         self.calib_num = 10
         self.model_path = model_path
@@ -46,7 +46,7 @@ class VtPublisherNode(Node):
         self.finder = VTSDeviceFinder()
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
         self.gf225 = GF225(config=config, model_path=self.model_path, device=self.device)
-        self.gf225.set_warp_params(offset=self.offset, dsize=self.dsize, mode=self.mode)
+        self.gf225.set_warp_params(mode=self.mode)
         self.gf225.start_backend()
         self.gf225.calibrate(self.calib_num)
 
