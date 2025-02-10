@@ -4,7 +4,7 @@ from rclpy.qos import QoSProfile
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-
+import os
 from pynput import keyboard
 
 from pyvitaisdk import GF225, VTSDeviceFinder
@@ -133,7 +133,7 @@ class VtPublisherNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    model_path = f"/home/sun/code/vitai/SDK-Release/models/best.pth"
+    model_path = f"/home/sun/code/vitai/ViTai-SDK-Release/models/best.pth"
     device = "cpu"
     node = VtPublisherNode(model_path=model_path, device=device)
     rclpy.spin(node)

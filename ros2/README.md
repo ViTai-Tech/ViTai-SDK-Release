@@ -7,7 +7,7 @@ Python==3.12.*
 
 ## 需安装pynout
 ```
-pip install pynout
+pip install pynput
 ```
 
 ## 如何使用
