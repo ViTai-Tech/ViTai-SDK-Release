@@ -4,7 +4,6 @@
 Description  : Example:获取传感器图像
 """
 import cv2
-
 from pyvitaisdk import GF225, VTSDeviceFinder
 
 
@@ -18,10 +17,7 @@ def auto_warp_mode():
     config = finder.get_device_by_sn(sn)
     gf225 = GF225(config=config)
     # 修改参数
-    offset = [5, 45, 25, 25]
-    dsize = 240
-    mode = 'auto'
-    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.set_warp_params(mode='auto')
     gf225.start_backend()
 
     while 1:
@@ -48,10 +44,9 @@ def manual_warp_mode():
     # 修改参数
     corner_points = [[150, 78], [464, 73], [435, 341], [183, 339]] # 左上 右上 右下 左下
     offset = [5, 45, 25, 25]
-    dsize = 240
     mode = 'manual'
     # mode = 'auto'
-    gf225.set_warp_params(corner_points=corner_points, offset=offset, dsize=dsize, mode=mode)
+    gf225.set_warp_params(corner_points=corner_points, offset=offset, mode=mode)
     gf225.start_backend()
 
     while 1:

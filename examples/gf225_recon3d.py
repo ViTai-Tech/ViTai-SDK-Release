@@ -1,49 +1,32 @@
 #!/usr/bin/env python3
 # coding=utf-8
 """
-Description  : 深度恢复示例
+Description  : Example:深度估计
 """
+from datetime import datetime
 import cv2
 import numpy as np
 
 from pyvitaisdk import GF225, VTSDeviceFinder
-from pathlib import Path
-
-
-def get_project_root():
-    current_file_path = Path(__file__).resolve()
-    current_dir = current_file_path.parent
-    project_root = current_dir.parent
-    return project_root
-
-
-project_root = get_project_root()
-print(f"Project root directory: {project_root}")
-
-
-def put_text_to_image(img, text, origin=(10,30)) -> None:
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    color = (255, 255, 255)
-    thickness = 1
-    cv2.putText(img, text, origin, font, font_scale, color, thickness, cv2.LINE_AA)
+from utils import get_project_root, put_text_to_image, create_folder
 
 def main():
-
+    project_root = get_project_root()
     finder = VTSDeviceFinder()
     if len(finder.get_sns()) == 0:
         print("No device found.")
         return
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
+
+    folder = f'{project_root}/data/{datetime.now().strftime("%Y_%m_%d")}'
+    create_folder(folder)
+
     config = finder.get_device_by_sn(sn)
     gf225 = GF225(config=config, model_path=f"{project_root}/models/best.pth", device="cpu")
 
     # 修改参数
-    offset = [5, 45, 25, 25]
-    dsize = 240
-    mode = 'auto'
-    gf225.set_warp_params(offset=offset, dsize=dsize, mode=mode)
+    gf225.set_warp_params(mode='auto')
     gf225.start_backend()
     bg = gf225.get_warped_frame()
     gf225.set_background(bg)
@@ -58,6 +41,11 @@ def main():
             frame_copy = frame.copy()
             put_text_to_image(frame_copy, str(np.max(depth_map)))
             cv2.imshow(f"warped_frame", frame_copy)
+
+            # formatted_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
+            # cv2.imwrite(os.path.join(folder, f"frame_{formatted_now}.png"), frame)
+            # cv2.imwrite(os.path.join(folder, f"depth_map_{formatted_now}.png"), depth_map)
+            # print(f'dz {np.max(depth_map)}')
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):

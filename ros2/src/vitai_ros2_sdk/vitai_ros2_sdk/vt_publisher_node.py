@@ -82,7 +82,7 @@ class VtPublisherNode(Node):
             self.publish_msg(self.markers_pub, markers_str)
 
         if self.gf225.is_calibrate():
-            vector = self.gf225.get_3d_vector(warped_frame)
+            vector = self.gf225.get_xyz_vector(warped_frame)
             if vector is not None:
                 vector_str = np.array2string(vector)
                 self.publish_msg(self.vector_pub, vector_str)
