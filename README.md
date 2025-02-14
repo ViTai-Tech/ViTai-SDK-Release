@@ -15,7 +15,7 @@ RK3588、Jetson Orin NX
 
 需要确保系统已经安装了v4l-utils
 ```
-sudo apt-get install v4l-utils
+sudo apt-get -y install v4l-utils
 ```
 
 ------
