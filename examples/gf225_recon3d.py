@@ -40,6 +40,7 @@ def main():
 
             frame_copy = frame.copy()
             put_text_to_image(frame_copy, str(np.max(depth_map)))
+            put_text_to_image(frame_copy, str(np.mean(depth_map)), (10,60))
             cv2.imshow(f"warped_frame", frame_copy)
 
             # formatted_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
@@ -53,7 +54,8 @@ def main():
         elif key == ord("e"):
             # 按e 重新设置背景图
             gf225.clear_background()
-            gf225.set_background(frame)
+            bg = gf225.get_warped_frame()
+            gf225.set_background(bg)
 
     gf225.stop_backend()
     gf225.release()
