@@ -4,3 +4,5 @@ ros2/install
 ros2/log
 
 __pycache__/
+
+data
