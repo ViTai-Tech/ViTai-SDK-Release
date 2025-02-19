@@ -1,3 +1,5 @@
+import sys
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
@@ -12,7 +14,7 @@ import numpy as np
 
 
 class VtPublisherNode(Node):
-    def __init__(self, model_path: str, device: str):
+    def __init__(self):
         super().__init__("VtPublisherNode")
         qos_profile = QoSProfile(depth=10)
         self.raw_img_pub = self.create_publisher(Image, "raw_img", qos_profile)
@@ -28,14 +30,9 @@ class VtPublisherNode(Node):
         self.timer = self.create_timer(0.01, self.timer_callback)
         self.bridge = CvBridge()
         self.finder = None
-        self.vt = None
-        # self.scale = 1
-        # self.dsize = 240
-        # self.offset = [5, 45, 25, 25]
+        self.gf225 = None
         self.mode = 'auto'
         self.calib_num = 10
-        self.model_path = model_path
-        self.device = device
         self.init_vt()
 
         self.key = ''
@@ -45,7 +42,7 @@ class VtPublisherNode(Node):
     def init_vt(self):
         self.finder = VTSDeviceFinder()
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
-        self.gf225 = GF225(config=config, model_path=self.model_path, device=self.device)
+        self.gf225 = GF225(config=config)
         self.gf225.set_warp_params(mode=self.mode)
         self.gf225.start_backend()
         self.gf225.calibrate(self.calib_num)
@@ -55,7 +52,6 @@ class VtPublisherNode(Node):
             raw_frame = self.gf225.get_raw_frame()
             warped_frame = self.gf225.get_warped_frame()
         except Exception as e:
-            self.get_logger().error(f"Failed to get frames: {e}")
             return
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
         self.publish_image(self.warped_img_pub, warped_frame, encoding="bgr8")
@@ -122,19 +118,18 @@ class VtPublisherNode(Node):
         except AttributeError:
             pass
 
+    # esc 退出程序
     def on_release(self, key):
         if key == keyboard.Key.esc:
             self.get_logger().info('Exiting...')
             self.gf225.release()
             self.gf225.stop_backend()
             self.listener.stop()
+            self.destroy_node()
             rclpy.shutdown()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    model_path = f"/home/sun/code/vitai/ViTai-SDK-Release/models/best.pth"
-    device = "cpu"
-    node = VtPublisherNode(model_path=model_path, device=device)
+    node = VtPublisherNode()
     rclpy.spin(node)
-    rclpy.shutdown()
