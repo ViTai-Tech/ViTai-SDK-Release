@@ -8,6 +8,7 @@ Python==3.12.*
 ## 需安装pynout
 ```
 pip install pynput
+pip install loguru
 ```
 
 ## 如何使用
@@ -20,9 +21,9 @@ pip install pynput
    ros2 run vitai_ros2_sdk vt_subscriber_node
 ```
 
-## 添加conda python 环境
+## 参考添加conda python 环境
+
 ```
-    #参考
     export PYTHONPATH=$PYTHONPATH:/home/root/miniconda3/envs/py312/lib/python3.12/site-packages 
 ```
 
