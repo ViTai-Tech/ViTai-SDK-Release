@@ -8,7 +8,7 @@ from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 import numpy as np
 import cv2
 from pyvitaisdk import GF225, VTSDeviceFinder
-from utils import get_project_root, debounce
+from utils import debounce
 
 # 创建一个包含20个逐渐变深的渐变色的颜色映射
 colors = [(1, 0, 0), (0, 0, 0)]
@@ -18,7 +18,6 @@ bounds = np.linspace(0, 1, 21)  # 21个边界，形成20个区间
 norm = BoundaryNorm(bounds, cmap.N)
 
 def main():
-    project_root = get_project_root()
     finder = VTSDeviceFinder()
     if len(finder.get_sns()) == 0:
         print("No device found.")
@@ -79,8 +78,8 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
-    gf225.release()
     gf225.stop_backend()
+    gf225.release()
     plt.close('all')  # 关闭所有图形窗口
 
 if __name__ == "__main__":

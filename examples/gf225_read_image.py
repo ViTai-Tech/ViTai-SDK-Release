@@ -28,8 +28,8 @@ def auto_warp_mode():
         if key == 27 or key == ord("q"):
             break
 
-    gf225.release()
     gf225.stop_backend()
+    gf225.release()
 
 def manual_warp_mode():
 
@@ -57,8 +57,8 @@ def manual_warp_mode():
         if key == 27 or key == ord("q"):
             break
 
-    gf225.release()
     gf225.stop_backend()
+    gf225.release()
 
 
 if __name__ == "__main__":
