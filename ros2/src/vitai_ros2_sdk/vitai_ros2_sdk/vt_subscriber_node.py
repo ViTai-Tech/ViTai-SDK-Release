@@ -34,7 +34,7 @@ class VTSubscriberNode(Node):
         cv2.waitKey(1)
 
     def depth_map_callback(self, msg):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='32FC1')
+        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='64FC1')
         cv2.imshow('depth map', cv_image)
         cv2.waitKey(1)
 

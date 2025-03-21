@@ -59,7 +59,7 @@ class VtPublisherNode(Node):
         if self.gf225.is_background_init():
             self.gf225.recon3d(warped_frame)
             depth_map = self.gf225.get_depth_map()
-            self.publish_image(self.depth_map_pub, depth_map, encoding="32FC1")
+            self.publish_image(self.depth_map_pub, depth_map, encoding="64FC1")
 
         if not self.gf225.is_inited_marker():
             self.gf225.init_marker(warped_frame)
@@ -122,8 +122,8 @@ class VtPublisherNode(Node):
     def on_release(self, key):
         if key == keyboard.Key.esc:
             self.get_logger().info('Exiting...')
-            self.gf225.release()
             self.gf225.stop_backend()
+            self.gf225.release()
             self.listener.stop()
             self.destroy_node()
             rclpy.shutdown()
