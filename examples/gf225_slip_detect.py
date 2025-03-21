@@ -6,11 +6,10 @@ Description  : Example:获取滑动状态
 
 import cv2
 from pyvitaisdk import GF225, VTSDeviceFinder
-from utils import get_project_root, put_text_to_image
+from utils import put_text_to_image
 
 
 def main():
-    project_root = get_project_root()
     finder = VTSDeviceFinder()
     if len(finder.get_sns()) == 0:
         print("No device found.")

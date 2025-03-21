@@ -36,17 +36,17 @@ def tracking():
             origin_markers = gf225.get_origin_markers()
             current_markers = gf225.get_markers()
             dis_x, dis_y = gf225.get_markers_displacement()
-            # print(f'dx {np.sum(dis_x)}, dy {np.sum(dis_y)}')
-            # print(f"get_origin_markers(): {origin_markers.shape}")
-            # print(f"get_markers(): {current_markers.shape}")
+            print(f'dx {dis_x.shape}, dy {dis_y.shape}')
+            print(f"get_origin_markers(): {origin_markers.shape}")
+            print(f"get_markers(): {current_markers.shape}")
             cv2.imshow(f"tracking image", warped_frame_copy)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 
-    gf225.release()
     gf225.stop_backend()
+    gf225.release()
 
 
 if __name__ == "__main__":
