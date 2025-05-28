@@ -25,7 +25,7 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config)
+    gf225 = GF225(config=config, marker_size=11)
 
     # 修改参数
     gf225.set_warp_params(mode='auto')
@@ -67,10 +67,10 @@ def main():
             ax.set_xlim(minx, maxx)
             ax.set_ylim(miny, maxy)
             ax.set_zlim(0, 1)
-            ax.scatter(x, y, z, c=z, cmap=cmap, norm=norm, s=20)
+            ax.scatter(y, x, z, c=z, cmap=cmap, norm=norm, s=20)
             ax.set_title('3D Point Visualization')
-            ax.set_xlabel('X Axis')
-            ax.set_ylabel('Y Axis')
+            ax.set_xlabel('Y Axis')
+            ax.set_ylabel('X Axis')
             ax.set_zlabel('Z Axis')
 
             plt.pause(0.001)  # 暂停以更新显示
