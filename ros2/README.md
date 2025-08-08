@@ -5,7 +5,7 @@
 
 Python==3.12.*
 
-## 需安装pynout
+## 需安装pynput
 ```
 pip install pynput
 pip install loguru
@@ -24,7 +24,7 @@ pip install loguru
 ## 参考添加conda python 环境
 
 ```
-    export PYTHONPATH=$PYTHONPATH:/home/root/miniconda3/envs/py312/lib/python3.12/site-packages 
+    export PYTHONPATH=$PYTHONPATH:/home/{username}/miniconda3/envs/{envname}/lib/python3.12/site-packages 
 ```
 
 
