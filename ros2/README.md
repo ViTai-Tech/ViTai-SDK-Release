@@ -1,5 +1,5 @@
 # 集成ROS2的ViTai传感器使用示例
-
+在ROS2中使用vitai tactile sensor时，需要安装pyvitaisdk, 建议在conda环境中安装使用
 
 ## 环境要求
 
