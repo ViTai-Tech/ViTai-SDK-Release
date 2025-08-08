@@ -21,6 +21,11 @@ pip install loguru
    ros2 run vitai_ros2_sdk vt_subscriber_node
 ```
 
+## 如何关闭ros2  同一局域网跨设备通信
+```bash
+export ROS_DOMAIN_ID=10 # 改为一个其他设备不会用的数字（1-232）
+```
+
 ## 参考添加conda python 环境
 
 ```
