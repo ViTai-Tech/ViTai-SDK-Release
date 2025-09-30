@@ -4,10 +4,10 @@
 
 ## 环境要求
 
-Python==3.12.*
+python 3.10 or python 3.12
 
 ```
-支持ubuntu 24.04
+支持ubuntu 20.04 22.04 24.04
 RK3588、Jetson Orin NX
 ```
 
