@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # 打印目前链接的传感器数量
     print('finder.count()', finder.count())
 
-    # 打印目前链接的传感器数量
+    # 打印目前链接的传感器index
     print('finder.indexes()', finder.indexes())
 
     # 打印指定序列号的传感器信息
