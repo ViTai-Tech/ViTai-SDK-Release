@@ -91,11 +91,9 @@ class VtPublisherNode(Node):
         self.key = ''
 
     def publish_image(self, pub, image, encoding):
-        # convert to ROS2 image message
         ros_img = self.bridge.cv2_to_imgmsg(image, encoding=encoding)
         ros_img.header.stamp = self.get_clock().now().to_msg()
         ros_img.header.frame_id = "vitai_sensor"
-        # publish image
         pub.publish(ros_img)
 
     def publish_marker(self, pub, markers):
@@ -109,7 +107,6 @@ class VtPublisherNode(Node):
         
         markers = markers.reshape(-1, 2)
         
-        # markers shape is (N, 2), convert to Point32 with z=0
         for i in range(len(markers)):
             p = Point32()
             p.x = float(markers[i, 0])

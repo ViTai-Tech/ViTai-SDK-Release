@@ -1,6 +1,8 @@
 # SDK-Release
 
-该仓库用来发布ViTai 传感器的Python SDK。
+[English](README_EN.md) | 简体中文
+
+该仓库用来发布ViTai 视触觉传感器的Python SDK。
 
 ## 环境要求
 
@@ -8,7 +10,7 @@ python 3.10 or python 3.12
 
 ```
 支持ubuntu 20.04 22.04 24.04
-RK3588、Jetson Orin NX
+RK3588 Jetson Orin NX
 ```
 
 ## 如何使用
