@@ -23,8 +23,6 @@ class VtPublisherNode(Node):
         self.markers_pub = self.create_publisher(PointCloud, "markers", qos_profile)
         self.vector_pub = self.create_publisher(PointCloud, "vector", qos_profile)
 
-        self.slip_state_pub = self.create_publisher(String, "slip_state", qos_profile)
-
         self.timer = self.create_timer(0.01, self.timer_callback)
         self.bridge = CvBridge()
         self.finder = None
@@ -74,18 +72,10 @@ class VtPublisherNode(Node):
             if vector is not None:
                 self.publish_vector(self.vector_pub, vector)
 
-            slip_state = self.gf225.slip_state()
-            self.publish_msg(self.slip_state_pub, slip_state.name)
 
-        if self.key in ["e", "d", "r"]:
+        if self.key in ["r"]:
             self.get_logger().info(f'self.key: "{self.key}"')
-            if self.key == "e":
-                # 按e开启滑动检测
-                self.gf225.enable_slip_detect()
-            elif self.key == "d":
-                # 按d关闭滑动检测
-                self.gf225.disable_slip_detect()
-            elif self.key == 'r':
+            if self.key == 'r':
                 self.gf225.re_calibrate(self.calib_num)  # 重新标定
 
         self.key = ''

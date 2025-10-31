@@ -44,8 +44,8 @@ export PYTHONPATH=$PYTHONPATH:/home/{username}/miniconda3/envs/{envname}/lib/pyt
 - **`/depth_map`** (sensor_msgs/Image) - 从视触觉数据重建的3D深度图
 - **`/origin_markers`** (sensor_msgs/PointCloud) - 原始标记点位置（2D点，z=0）
 - **`/markers`** (sensor_msgs/PointCloud) - 当前标记点位置（2D点，z=0）
-- **`/vector`** (sensor_msgs/PointCloud) - 3D力向量（单个3D点）
-- **`/slip_state`** (std_msgs/String) - 滑动检测状态
+- **`/vector`** (sensor_msgs/PointCloud) - xyz向量（3D点）
+
 
 所有带header的消息都包含来自ROS2时钟的时间戳。
 
@@ -53,8 +53,7 @@ export PYTHONPATH=$PYTHONPATH:/home/{username}/miniconda3/envs/{envname}/lib/pyt
 
 运行 `vt_publisher_node` 时：
 
-- **`e`** - 开启滑动检测
-- **`d`** - 关闭滑动检测
+
 - **`r`** - 重新校准传感器
 - **`ESC`** - 优雅地退出程序
 
