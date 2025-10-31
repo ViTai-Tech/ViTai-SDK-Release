@@ -10,7 +10,7 @@ Python 3.10 or Python 3.12
 
 ```
 Supports Ubuntu 20.04, 22.04, 24.04
-RK3588 Jetson Orin NX
+RK3588
 ```
 
 ## How to Use
