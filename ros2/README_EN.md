@@ -44,8 +44,7 @@ The `vt_publisher_node` publishes the following topics:
 - **`/depth_map`** (sensor_msgs/Image) - 3D depth map reconstructed from vision-based tactile data
 - **`/origin_markers`** (sensor_msgs/PointCloud) - Original marker positions (2D points with z=0)
 - **`/markers`** (sensor_msgs/PointCloud) - Current marker positions (2D points with z=0)
-- **`/vector`** (sensor_msgs/PointCloud) - 3D force vector (single 3D point)
-- **`/slip_state`** (std_msgs/String) - Slip detection state
+- **`/vector`** (sensor_msgs/PointCloud) - xyz vector (3D point)
 
 All messages with headers include timestamps from the ROS2 clock.
 
@@ -53,8 +52,6 @@ All messages with headers include timestamps from the ROS2 clock.
 
 When running `vt_publisher_node`:
 
-- **`e`** - Enable slip detection
-- **`d`** - Disable slip detection
 - **`r`** - Re-calibrate the sensor
 - **`ESC`** - Exit the program gracefully
 

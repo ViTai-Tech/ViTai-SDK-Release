@@ -40,8 +40,6 @@ def main():
             cv2.imshow(f"diff image", cv2.subtract(frame, bg))
 
             frame_copy = frame.copy()
-            put_text_to_image(frame_copy, str(np.max(depth_map)))
-            put_text_to_image(frame_copy, str(np.mean(depth_map)), (10,60))
             cv2.imshow(f"warped_frame", frame_copy)
 
             if save:

@@ -19,7 +19,6 @@ class VTSubscriberNode(Node):
         self.markers_sub = self.create_subscription(PointCloud, 'markers', self.markers_callback, qos_profile)
 
         self.vector_sub = self.create_subscription(PointCloud, 'vector', self.vector_callback, qos_profile)
-        self.slip_state_sub = self.create_subscription(String, 'slip_state', self.slip_state_callback, qos_profile)
 
         self.bridge = CvBridge()
 
@@ -65,8 +64,6 @@ class VTSubscriberNode(Node):
             p = msg.points[0]
             self.get_logger().info(f'[{timestamp:.6f}s] vector: ({p.x:.3f}, {p.y:.3f}, {p.z:.3f})')
 
-    def slip_state_callback(self, msg):
-        self.get_logger().info('Slip State: {}'.format(msg.data))
 
 def main(args=None):
     rclpy.init(args=args)
