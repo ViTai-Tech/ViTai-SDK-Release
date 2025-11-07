@@ -4,14 +4,15 @@ English | [简体中文](README.md)
 
 This repository is for releasing the Python SDK for ViTai vision-based tactile sensors.
 
-## Requirements
+## Supported Environments
 
-Python 3.10 or Python 3.12
+| Category | Supported Versions/Platforms |
+|----------|------------------------------|
+| **Python** | 3.10, 3.12 |
+| **Ubuntu** | 20.04, 22.04, 24.04 |
+| **Windows** | 10, 11 |
+| **Hardware** | RK3588, Jetson |
 
-```
-Supports Ubuntu 20.04, 22.04, 24.04
-RK3588
-```
 
 ## How to Use
 
@@ -43,6 +44,7 @@ sudo apt-get -y install v4l-utils
    ```
    pyvitaisdk-*_linux_aarch64.whl # Linux platform aarch64/arm64
    pyvitaisdk-*_linux_x86_64.whl # Linux platform x86_64
+   pyvitaisdk-*_win_amd64.whl # windows platform x86_64
    ```
 
 5. After installation, you can test using the code in the examples folder
