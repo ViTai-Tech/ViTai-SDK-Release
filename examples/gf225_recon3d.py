@@ -19,7 +19,7 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
 
-    folder = f'{project_root}/data/{datetime.now().strftime("%Y_%m_%d")}'
+    folder = f'{project_root}/data/{sn}/{datetime.now().strftime("%Y_%m_%d")}'
     create_folder(folder)
 
     config = finder.get_device_by_sn(sn)
@@ -30,7 +30,7 @@ def main():
     gf225.start_backend()
     bg = gf225.get_warped_frame()
     gf225.set_background(bg)
-    save = False
+    save = False  # 是否保存数据
     while 1:
         frame = gf225.get_warped_frame()
         if gf225.is_background_init():
@@ -45,8 +45,8 @@ def main():
             
             # 将三张图合并显示
             depth_max = max(1, np.max(depth_map))
-            depth_map = (depth_map / depth_max * 255).astype(np.uint8)
-            depth_map_display = np.stack([depth_map]*3, axis=-1)
+            tmp_depth_map = (depth_map / depth_max * 255).astype(np.uint8)
+            depth_map_display = np.stack([tmp_depth_map]*3, axis=-1)
             
             # 确保所有图像尺寸一致
             h, w = frame_copy.shape[:2]
@@ -61,7 +61,7 @@ def main():
             if save:
                 formatted_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
                 cv2.imwrite(os.path.join(folder, f"frame_{formatted_now}.png"), frame)
-                cv2.imwrite(os.path.join(folder, f"depth_map_{formatted_now}.png"), depth_map_display)
+                np.save(os.path.join(folder, f"depth_map_{formatted_now}.npy"), depth_map)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
