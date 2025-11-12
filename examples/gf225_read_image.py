@@ -21,8 +21,12 @@ def auto_warp_mode():
     gf225.start_backend()
 
     while 1:
-        cv2.imshow(f"get_raw_frame", gf225.get_raw_frame())
-        cv2.imshow("get_warped_frame", gf225.get_warped_frame())
+        raw_frame = gf225.get_raw_frame()
+        frame = gf225.get_warped_frame()
+        h, w = raw_frame.shape[:2]
+        frame_resized = cv2.resize(frame, (h, h))
+        combined = cv2.hconcat([raw_frame, frame_resized])
+        cv2.imshow("Raw Frame (Left) | Warped Frame (Right)", combined)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):
@@ -50,8 +54,12 @@ def manual_warp_mode():
     gf225.start_backend()
 
     while 1:
-        cv2.imshow(f"get_raw_frame", gf225.get_raw_frame())
-        cv2.imshow("get_warped_frame", gf225.get_warped_frame())
+        raw_frame = gf225.get_raw_frame()
+        frame = gf225.get_warped_frame()
+        h, w = raw_frame.shape[:2]
+        frame_resized = cv2.resize(frame, (h, h))
+        combined = cv2.hconcat([raw_frame, frame_resized])
+        cv2.imshow("Raw Frame (Left) | Warped Frame (Right)", combined)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
