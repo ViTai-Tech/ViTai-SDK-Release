@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import os
 from pyvitaisdk import GF225, VTSDeviceFinder
-from utils import get_project_root, put_text_to_image, create_folder
+from utils import get_project_root, create_folder
 
 def main():
     project_root = get_project_root()
@@ -36,16 +36,32 @@ def main():
         if gf225.is_background_init():
             gf225.recon3d(frame)
             depth_map = gf225.get_depth_map()
-            cv2.imshow(f"depth_map", depth_map)
-            cv2.imshow(f"diff image", cv2.subtract(frame, bg))
+            f = frame.astype(np.float32)
+            b = bg.astype(np.float32)
+            diff = (f-b+255) / 2
+            diff = diff.astype(np.uint8)
 
             frame_copy = frame.copy()
-            cv2.imshow(f"warped_frame", frame_copy)
+            
+            # 将三张图合并显示
+            depth_max = max(1, np.max(depth_map))
+            depth_map = (depth_map / depth_max * 255).astype(np.uint8)
+            depth_map_display = np.stack([depth_map]*3, axis=-1)
+            
+            # 确保所有图像尺寸一致
+            h, w = frame_copy.shape[:2]
+            depth_map_display = cv2.resize(depth_map_display, (w, h))
+            diff = cv2.resize(diff, (w, h))
+            
+            # 水平拼接三张图
+            combined = np.hstack([frame_copy, diff, depth_map_display])
+            
+            cv2.imshow("Warped Frame (Left) | Diff Image (Middle) | Depth Map (Right)", combined)
 
             if save:
                 formatted_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
                 cv2.imwrite(os.path.join(folder, f"frame_{formatted_now}.png"), frame)
-                cv2.imwrite(os.path.join(folder, f"depth_map_{formatted_now}.png"), depth_map)
+                cv2.imwrite(os.path.join(folder, f"depth_map_{formatted_now}.png"), depth_map_display)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):

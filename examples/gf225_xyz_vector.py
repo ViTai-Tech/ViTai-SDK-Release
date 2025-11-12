@@ -25,7 +25,9 @@ def main():
     sn = finder.get_sns()[0]
     print(f"sn: {sn}")
     config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config, marker_size=9)
+    gf225 = GF225(config=config, 
+                  marker_size=9,
+                  marker_offsets=[0, 0, 0, 0])
 
     # 修改参数
     gf225.set_warp_params(mode='auto')
