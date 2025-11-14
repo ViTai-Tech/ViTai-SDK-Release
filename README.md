@@ -18,7 +18,7 @@
 
 ## 如何使用
 
-需要确保系统已经安装了v4l-utils
+Linux 系统需要确保系统已经安装了v4l-utils
 ```
 sudo apt-get -y install v4l-utils
 ```

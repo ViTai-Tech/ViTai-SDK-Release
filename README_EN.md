@@ -17,7 +17,7 @@ This repository is for releasing the Python SDK for ViTai vision-based tactile s
 
 ## How to Use
 
-Ensure that v4l-utils is installed on your system:
+The Linux system must have v4l-utils installed.
 ```bash
 sudo apt-get -y install v4l-utils
 ```
