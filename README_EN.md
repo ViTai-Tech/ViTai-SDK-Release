@@ -11,7 +11,7 @@ This repository is for releasing the Python SDK for ViTai vision-based tactile s
 | **Python** | 3.10, 3.12 |
 | **Ubuntu** | 20.04, 22.04, 24.04 |
 | **Windows** | 10, 11 |
-| **MacOs** | 15 |
+| **MacOS** | 15 |
 | **Hardware** | RK3588, Jetson |
 
 
