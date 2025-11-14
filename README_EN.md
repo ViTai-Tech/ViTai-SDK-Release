@@ -26,7 +26,7 @@ sudo apt-get -y install v4l-utils
 
 ### Python Environment Setup
 
-1. Download the `pyvitaisdk*.whl` file
+1. Download the appropriate `pyvitaisdk*.whl` file from Releases.
 
 2. Create a `python3.12` virtual environment
 

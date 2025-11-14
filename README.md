@@ -27,7 +27,7 @@ sudo apt-get -y install v4l-utils
 
 ### Python环境准备
 
-1. 下载`pyvitaisdk*.whl`文件
+1. 下载Releases中合适的`pyvitaisdk*.whl`文件
 
 2. 创建`python3.12`虚拟环境
 
