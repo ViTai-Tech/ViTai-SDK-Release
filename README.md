@@ -43,11 +43,6 @@ sudo apt-get -y install v4l-utils
 
 4. 使用虚拟环境的pip安装sdk包，同时会联网下载其他所需的依赖库（需保证主机网络通畅）
 
-   ```
-   pyvitaisdk-*_linux_aarch64.whl # linux平台 arrch64/arm64
-   pyvitaisdk-*_linux_x86_64.whl # linux平台 x86_64
-   pyvitaisdk-*_win_amd64.whl # windows平台 x86_64
-   ```
 
 5. 安装完成后，即可使用examples中代码进行测试
 
