@@ -42,11 +42,6 @@ sudo apt-get -y install v4l-utils
 
 4. Install the SDK package using pip in the virtual environment. This will automatically download other required dependencies from the internet (ensure your network connection is stable)
 
-   ```
-   pyvitaisdk-*_linux_aarch64.whl # Linux platform aarch64/arm64
-   pyvitaisdk-*_linux_x86_64.whl # Linux platform x86_64
-   pyvitaisdk-*_win_amd64.whl # windows platform x86_64
-   ```
 
 5. After installation, you can test using the code in the examples folder
 
