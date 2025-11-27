@@ -4,6 +4,8 @@
 
 该仓库用来发布ViTai 视触觉传感器的Python SDK。
 
+SDK用户指南 见https://docs.vitai.site/
+
 ## 环境要求
 
 | Category | Supported Versions/Platforms |
@@ -17,7 +19,7 @@
 
 ## 如何使用
 
-需要确保系统已经安装了v4l-utils
+Linux需要确保系统已经安装了v4l-utils
 ```
 sudo apt-get -y install v4l-utils
 ```

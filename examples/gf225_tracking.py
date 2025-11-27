@@ -4,7 +4,7 @@
 Description  : Example:Marker追踪
 '''
 import cv2
-from pyvitaisdk import GF225, VTSDeviceFinder
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
 import numpy as np
 
 def tracking():
@@ -18,37 +18,36 @@ def tracking():
     config = finder.get_device_by_sn(sn)
     gf225 = GF225(config=config, 
                   marker_size=9,
-                  marker_offsets=[0, 0, 0, 0])
-    # 修改参数
-    gf225.set_warp_params(mode='auto')
-    gf225.start_backend()
+                  marker_offsets=[10, 10, 10, 10],
+                  stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                  output_format=GF225OutputProfile.W240_H240)
+    # 传感器校准
+    gf225.calibrate()
 
     while 1:
 
-        frame = gf225.get_warped_frame()
+        data = gf225.collect_sensor_data(GFDataType.WARPED_IMG, GFDataType.MARKER_IMG,
+                GFDataType.MARKER_ORIGIN_VECTOR,
+                GFDataType.MARKER_CURRENT_VECTOR,
+                GFDataType.MARKER_OFFSET_VECTOR)
         
+        warped_img = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
+        marker_img = data[GFDataType.MARKER_IMG] # np.ndarray, shape=(H,W,3)
+        marker_origin_vector = data[GFDataType.MARKER_ORIGIN_VECTOR] # np.ndarray, shape=(N,M,2)
+        marker_current_vector = data[GFDataType.MARKER_CURRENT_VECTOR] # np.ndarray, shape=(N,M,2)
+        marker_offset_vector = data[GFDataType.MARKER_OFFSET_VECTOR] # np.ndarray, shape=(N,M,2)
 
-        if not gf225.is_inited_marker():
-            gf225.init_marker(frame)
-        else:
-            flow = gf225.tracking(frame)
-            tracking_frame = np.zeros((frame.shape[0], frame.shape[1], 3), dtype=np.uint8)
-            gf225.draw_flow(tracking_frame, flow, enable_debounce=True)
 
-            # origin_markers = gf225.get_origin_markers()
-            # current_markers = gf225.get_markers()
-            # dis_x, dis_y = gf225.get_markers_displacement()
-            # print(f'dx {np.sum(dis_x)}, dy {np.sum(dis_y)}')
-            # print(f"get_origin_markers(): {origin_markers.shape}")
-            # print(f"get_markers(): {current_markers.shape}")
-            combined = cv2.hconcat([frame, tracking_frame])
-            cv2.imshow("Warped Frame (Left) | Marker Img (Right)", combined)
+        print(f"marker_origin_vector shape: {marker_origin_vector.shape}")
+        print(f"marker_current_vector shape: {marker_current_vector.shape}")
+        print(f"marker_offset_vector shape: {marker_offset_vector.shape}")
+        combined = cv2.hconcat([warped_img, marker_img])
+        cv2.imshow("Warped Frame (Left) | Marker Img (Right)", combined)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
 
-    gf225.stop_backend()
     gf225.release()
 
 
