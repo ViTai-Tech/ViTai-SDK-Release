@@ -4,6 +4,8 @@ English | [简体中文](README.md)
 
 This repository is for releasing the Python SDK for ViTai vision-based tactile sensors.
 
+SDK User Guide: https://docs.vitai.site/
+
 ## Supported Environments
 
 | Category | Supported Versions/Platforms |
