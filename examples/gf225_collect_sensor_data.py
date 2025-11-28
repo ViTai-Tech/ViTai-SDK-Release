@@ -17,6 +17,7 @@ def main():
     
     bg, frame = None, None
     process_offline = False  # 设置为 True 以启用离线处理示例
+    save_flag = True # 是否保存采集到的数据
     if process_offline:
         # 离线处理示例，读取本地数据
         gf225 = GF225(config=None, # 离线处理时 config 设为 None
@@ -58,9 +59,6 @@ def main():
     for key in sub_folder:
         create_folder(os.path.join(folder, sub_folder[key]))
     
-
-    save_flag = False # 是否保存采集到的数据
-
     try:
         print("\n开始数据采集，按 'q' 退出...")
         
