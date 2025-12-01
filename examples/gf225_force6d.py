@@ -97,7 +97,7 @@ class RealTimePlotter:
         plt.close(self.fig)
 
 
-def tracking():
+def main():
 
     finder = VTSDeviceFinder()
     if len(finder.get_sns()) == 0:
@@ -141,4 +141,4 @@ def tracking():
 
 
 if __name__ == "__main__":
-    tracking()
+    main()
