@@ -4,26 +4,35 @@
 Description  : Example:获取传感器图像
 """
 import cv2
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
 
 
 def read_image():
-    finder = VTSDeviceFinder()
-    if len(finder.get_sns()) == 0:
-        print("No device found.")
-        return
-    sn = finder.get_sns()[0]
-    print(f"sn: {sn}")
-    config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config, 
+    
+    try:
+        finder = VTSDeviceFinder()
+        if len(finder.get_sns()) == 0:
+            print("No device found.")
+            return
+        sn = finder.get_sns()[0]
+        print(f"sn: {sn}")
+        config = finder.get_device_by_sn(sn)
+        gf225 = GF225(config=config, 
                   stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
                   output_format=GF225OutputProfile.W240_H240)
+    except VTSError as e:
+        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
+        return
 
     while 1:
-        data = gf225.collect_sensor_data(
+        try:
+            data = gf225.collect_sensor_data(
                 GFDataType.TIME_STAMP,
                 GFDataType.RAW_IMG,
                 GFDataType.WARPED_IMG)
+        except VTSError as e:
+            print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
+            break
         raw_img = data[GFDataType.RAW_IMG] # np.ndarray, shape=(H,W,3)
         warped_img = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
         h, w = raw_img.shape[:2]

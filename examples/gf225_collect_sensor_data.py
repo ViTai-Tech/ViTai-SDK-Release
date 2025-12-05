@@ -10,38 +10,42 @@ import os
 import time
 import cv2
 import numpy as np
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
 from utils import get_project_root, put_text_to_image, create_folder
 
 def main():
     
     bg, frame = None, None
+    save_flag = False # 是否保存采集到的数据
     process_offline = False  # 设置为 True 以启用离线处理示例
-    save_flag = True # 是否保存采集到的数据
-    if process_offline:
-        # 离线处理示例，读取本地数据
-        gf225 = GF225(config=None, # 离线处理时 config 设为 None
-                      marker_size=9,
-                      stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                      output_format=GF225OutputProfile.W240_H240) # 根据需离线处理图像的尺寸选择对应输出格式
-        bg = cv2.imread(f"{get_project_root()}/examples/data/bg.png")
-        frame = cv2.imread(f"{get_project_root()}/examples/data/frame.png")
-        sn = "OFFLINE_SENSOR"
-        gf225.calibrate(calib_image=bg)
-    else:
-        # 在线处理示例，使用传感器实时图像
-        finder = VTSDeviceFinder()
-        if len(finder.get_sns()) == 0:
-            print("No device found.")
-            return
-        sn = finder.get_sns()[0]
-        print(f"sn: {sn}")
-        config = finder.get_device_by_sn(sn)
-        gf225 = GF225(config=config,
-                      marker_size=9,
-                      stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                      output_format=GF225OutputProfile.W240_H240)
-        gf225.calibrate()
+    try:
+        if process_offline:
+            # 离线处理示例，读取本地数据
+            gf225 = GF225(config=None, # 离线处理时 config 设为 None
+                        marker_size=9,
+                        stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                        output_format=GF225OutputProfile.W240_H240) # 根据需离线处理图像的尺寸选择对应输出格式
+            bg = cv2.imread(f"{get_project_root()}/examples/data/bg.png")
+            frame = cv2.imread(f"{get_project_root()}/examples/data/frame.png")
+            sn = "OFFLINE_SENSOR"
+            gf225.calibrate(calib_image=bg)
+        else:
+            # 在线处理示例，使用传感器实时图像
+            finder = VTSDeviceFinder()
+            if len(finder.get_sns()) == 0:
+                print("No device found.")
+                return
+            sn = finder.get_sns()[0]
+            print(f"sn: {sn}")
+            config = finder.get_device_by_sn(sn)
+            gf225 = GF225(config=config,
+                        marker_size=9,
+                        stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                        output_format=GF225OutputProfile.W240_H240)
+            gf225.calibrate()
+    except VTSError as e:
+        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
+        return
 
     project_root = get_project_root()
     folder = f'{project_root}/data/{sn}/{datetime.now().strftime("%Y_%m_%d")}'
@@ -59,25 +63,30 @@ def main():
     for key in sub_folder:
         create_folder(os.path.join(folder, sub_folder[key]))
     
+
     try:
         print("\n开始数据采集，按 'q' 退出...")
         
         while True:
             # 示例 : 获取数据
-            data = gf225.collect_sensor_data(
-                GFDataType.TIME_STAMP,
-                GFDataType.RAW_IMG,
-                GFDataType.WARPED_IMG,
-                GFDataType.DIFF_IMG,
-                GFDataType.DEPTH_MAP,
-                GFDataType.MARKER_IMG,
-                GFDataType.MARKER_ORIGIN_VECTOR,
-                GFDataType.MARKER_CURRENT_VECTOR,
-                GFDataType.MARKER_OFFSET_VECTOR,
-                GFDataType.XYZ_VECTOR,
-                GFDataType.SLIP_STATE,
-                frame=frame
-            )
+            try:
+                data = gf225.collect_sensor_data(
+                    GFDataType.TIME_STAMP,
+                    GFDataType.RAW_IMG,
+                    GFDataType.WARPED_IMG,
+                    GFDataType.DIFF_IMG,
+                    GFDataType.DEPTH_MAP,
+                    GFDataType.MARKER_IMG,
+                    GFDataType.MARKER_ORIGIN_VECTOR,
+                    GFDataType.MARKER_CURRENT_VECTOR,
+                    GFDataType.MARKER_OFFSET_VECTOR,
+                    GFDataType.XYZ_VECTOR,
+                    GFDataType.SLIP_STATE,
+                    frame=frame
+                )
+            except VTSError as e:
+                print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
+                break
             
             # 访问不同的数据
             timestamp = data[GFDataType.TIME_STAMP] # int # 毫秒级时间戳

@@ -6,7 +6,7 @@ Description  : Example:6维力估计
 import time
 import cv2
 import matplotlib.pyplot as plt
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
 import numpy as np
 from collections import deque
 
@@ -97,34 +97,43 @@ class RealTimePlotter:
         plt.close(self.fig)
 
 
-def tracking():
+def main():
+    try:
+        finder = VTSDeviceFinder()
+        if len(finder.get_sns()) == 0:
+            print("No device found.")
+            return
+        sn = finder.get_sns()[0]
+        print(f"sn: {sn}")
+        config = finder.get_device_by_sn(sn)
+        gf225 = GF225(config=config, 
+                    marker_size=21, # [rows, cols]
+                    #   marker_offsets=[10, 10, 10, 10],
+                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                    output_format=GF225OutputProfile.W240_H240)
+        # 传感器校准
+        gf225.calibrate()
 
-    finder = VTSDeviceFinder()
-    if len(finder.get_sns()) == 0:
-        print("No device found.")
+    except VTSError as e:
+        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
         return
-    sn = finder.get_sns()[0]
-    print(f"sn: {sn}")
-    config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config, 
-                  marker_size=21,
-                  stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                  output_format=GF225OutputProfile.W240_H240)
-    # 传感器校准
-    gf225.calibrate()
 
     rt_plotter = RealTimePlotter()
     t0 = time.monotonic()
     
     while 1:
         t1 = time.monotonic()
-
-        data = gf225.collect_sensor_data(
-                GFDataType.WARPED_IMG,
-                GFDataType.FORCE6D_VECTOR)
+        try:
+            data = gf225.collect_sensor_data(
+                    GFDataType.WARPED_IMG,
+                    GFDataType.FORCE6D_VECTOR)
+        except VTSError as e:
+            print(f"Error collecting sensor data: {e}, suggestion {e.suggestion}")
+            break
         
         warped_img = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
         force6d_vector = data[GFDataType.FORCE6D_VECTOR] # np.ndarray, shape=(6,)
+        # print(f"Force6D Vector: {force6d_vector}")
         f = force6d_vector[0:3]  # Fx, Fy, Fz
         m = force6d_vector[3:6]  # Mx, My, Mz
         rt_plotter.update(t1-t0, f, m)
@@ -141,4 +150,4 @@ def tracking():
 
 
 if __name__ == "__main__":
-    tracking()
+    main()

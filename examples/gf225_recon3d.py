@@ -7,32 +7,41 @@ from datetime import datetime
 import cv2
 import numpy as np
 import os
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
 from utils import get_project_root, put_text_to_image, create_folder
 
 def main():
-    project_root = get_project_root()
-    finder = VTSDeviceFinder()
-    if len(finder.get_sns()) == 0:
-        print("No device found.")
+    try:
+        project_root = get_project_root()
+        finder = VTSDeviceFinder()
+        if len(finder.get_sns()) == 0:
+            print("No device found.")
+            return
+        sn = finder.get_sns()[0]
+        print(f"sn: {sn}")
+
+        folder = f'{project_root}/data/{sn}/{datetime.now().strftime("%Y_%m_%d")}'
+        create_folder(folder)
+
+        config = finder.get_device_by_sn(sn)
+        gf225 = GF225(config=config, 
+                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                    output_format=GF225OutputProfile.W240_H240)
+        # 传感器校准
+        gf225.calibrate()
+    except VTSError as e:
+        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
         return
-    sn = finder.get_sns()[0]
-    print(f"sn: {sn}")
-
-    folder = f'{project_root}/data/{sn}/{datetime.now().strftime("%Y_%m_%d")}'
-    create_folder(folder)
-
-    config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config, 
-                  stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                  output_format=GF225OutputProfile.W240_H240)
-    # 传感器校准
-    gf225.calibrate()
+   
     while 1:
-        data = gf225.collect_sensor_data(
-                GFDataType.WARPED_IMG,
-                GFDataType.DIFF_IMG,
-                GFDataType.DEPTH_MAP)
+        try:
+            data = gf225.collect_sensor_data(
+                    GFDataType.WARPED_IMG,
+                    GFDataType.DIFF_IMG,
+                    GFDataType.DEPTH_MAP)
+        except VTSError as e:
+            print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
+            break
         frame = data[GFDataType.WARPED_IMG]     # np.ndarray, shape=(H,W,3)
         diff = data[GFDataType.DIFF_IMG]        # np.ndarray, shape=(H,W,3)
         depth_map = data[GFDataType.DEPTH_MAP]  # np.ndarray, shape=(H,W), dtype=float32

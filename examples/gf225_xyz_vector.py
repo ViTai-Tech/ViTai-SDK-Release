@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 import numpy as np
 import cv2
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType
+from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
 from utils import debounce
 
 # 创建一个包含20个逐渐变深的渐变色的颜色映射
@@ -18,20 +18,26 @@ bounds = np.linspace(0, 1, 21)  # 21个边界，形成20个区间
 norm = BoundaryNorm(bounds, cmap.N)
 
 def main():
-    finder = VTSDeviceFinder()
-    if len(finder.get_sns()) == 0:
-        print("No device found.")
-        return
-    sn = finder.get_sns()[0]
-    print(f"sn: {sn}")
-    config = finder.get_device_by_sn(sn)
-    gf225 = GF225(config=config, 
-                  marker_size=9,
-                  stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                  output_format=GF225OutputProfile.W240_H240)
 
-    # 传感器校准
-    gf225.calibrate()
+    try:
+        finder = VTSDeviceFinder()
+        if len(finder.get_sns()) == 0:
+            print("No device found.")
+            return
+        sn = finder.get_sns()[0]
+        print(f"sn: {sn}")
+        config = finder.get_device_by_sn(sn)
+        gf225 = GF225(config=config, 
+                    marker_size=9,
+                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
+                    output_format=GF225OutputProfile.W240_H240)
+
+        # 传感器校准
+        gf225.calibrate()
+    except VTSError as e:
+        print(f"Error finding device: {e}, suggestion: {e.suggestion}")
+        return
+
 
     flag = False
     minx, maxx, miny, maxy = 0, 0, 0, 0
@@ -41,8 +47,11 @@ def main():
 
     o_v = None
     while True:
-        
-        data = gf225.collect_sensor_data(GFDataType.XYZ_VECTOR, GFDataType.WARPED_IMG)
+        try:
+            data = gf225.collect_sensor_data(GFDataType.XYZ_VECTOR, GFDataType.WARPED_IMG)
+        except VTSError as e:
+            print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
+            break
         xyz_vector = data[GFDataType.XYZ_VECTOR] # np.ndarray, shape=(N,M,3)
         frame = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
         cv2.imshow("image", frame)
