@@ -7,7 +7,7 @@ from geometry_msgs.msg import Point32
 from std_msgs.msg import String
 from pynput import keyboard
 
-from pyvitaisdk import GF225, VTSDeviceFinder
+from pyvitaisdk import GF225, VTSDeviceFinder, VTSError, GFDataType
 
 
 class VtPublisherNode(Node):
@@ -23,12 +23,12 @@ class VtPublisherNode(Node):
         self.markers_pub = self.create_publisher(PointCloud, "markers", qos_profile)
         self.vector_pub = self.create_publisher(PointCloud, "vector", qos_profile)
 
+        self.slip_state_pub = self.create_publisher(String, "slip_state", qos_profile)
+
         self.timer = self.create_timer(0.01, self.timer_callback)
         self.bridge = CvBridge()
         self.finder = None
         self.gf225 = None
-        self.mode = 'auto'
-        self.calib_num = 10
         self.init_vt()
 
         self.key = ''
@@ -39,44 +39,48 @@ class VtPublisherNode(Node):
         self.finder = VTSDeviceFinder()
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
         self.gf225 = GF225(config=config)
-        self.gf225.set_warp_params(mode=self.mode)
-        self.gf225.start_backend()
-        self.gf225.calibrate(self.calib_num)
+        self.gf225.calibrate()
 
     def timer_callback(self):
         try:
-            raw_frame = self.gf225.get_raw_frame()
-            warped_frame = self.gf225.get_warped_frame()
-        except Exception as e:
+            data = self.gf225.collect_sensor_data(
+                    GFDataType.TIME_STAMP,
+                    GFDataType.RAW_IMG,
+                    GFDataType.WARPED_IMG,
+                    GFDataType.DIFF_IMG,
+                    GFDataType.DEPTH_MAP,
+                    GFDataType.MARKER_IMG,
+                    GFDataType.MARKER_ORIGIN_VECTOR,
+                    GFDataType.MARKER_CURRENT_VECTOR,
+                    GFDataType.MARKER_OFFSET_VECTOR,
+                    GFDataType.XYZ_VECTOR,
+                    GFDataType.SLIP_STATE
+                )
+        except VTSError as e:
+            self.get_logger().error(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
             return
+        
+        raw_frame = data[GFDataType.RAW_IMG]
+        warped_frame = data[GFDataType.WARPED_IMG]
+        depth_map = data[GFDataType.DEPTH_MAP]
+        origin_markers = data[GFDataType.MARKER_ORIGIN_VECTOR]
+        current_markers = data[GFDataType.MARKER_CURRENT_VECTOR]
+        slip_state = data[GFDataType.SLIP_STATE]
+        xyz_vector = data[GFDataType.XYZ_VECTOR]
+
+
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
         self.publish_image(self.warped_img_pub, warped_frame, encoding="bgr8")
-
-        if self.gf225.is_background_init():
-            self.gf225.recon3d(warped_frame)
-            depth_map = self.gf225.get_depth_map()
-            self.publish_image(self.depth_map_pub, depth_map, encoding="64FC1")
-
-        if not self.gf225.is_inited_marker():
-            self.gf225.init_marker(warped_frame)
-        else:
-            self.gf225.tracking(warped_frame)
-            origin_markers = self.gf225.get_origin_markers()
-            markers = self.gf225.get_markers()
-
-            self.publish_marker(self.origin_markers_pub, origin_markers)
-            self.publish_marker(self.markers_pub, markers)
-
-        if self.gf225.is_calibrate():
-            vector = self.gf225.get_xyz_vector(warped_frame)
-            if vector is not None:
-                self.publish_vector(self.vector_pub, vector)
+        self.publish_image(self.depth_map_pub, depth_map, encoding="64FC1")
+        self.publish_marker(self.origin_markers_pub, origin_markers)
+        self.publish_marker(self.markers_pub, current_markers)
+        self.publish_msg(self.slip_state_pub, slip_state.name)
+        self.publish_vector(self.vector_pub, xyz_vector)
 
 
         if self.key in ["r"]:
             self.get_logger().info(f'self.key: "{self.key}"')
-            if self.key == 'r':
-                self.gf225.re_calibrate(self.calib_num)  # 重新标定
+            self.gf225.calibrate()
 
         self.key = ''
 
@@ -111,7 +115,7 @@ class VtPublisherNode(Node):
         msg = PointCloud()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = "vitai_sensor"
-
+        vector = vector.reshape(-1, 3)
         for i in range(len(vector)):
             p = Point32()
             p.x = float(vector[i, 0])
@@ -140,7 +144,6 @@ class VtPublisherNode(Node):
             # 先停止 timer 避免回调继续执行
             self.timer.cancel()
             # 停止传感器后台线程
-            self.gf225.stop_backend()
             self.gf225.release()
             # 停止键盘监听
             self.listener.stop()

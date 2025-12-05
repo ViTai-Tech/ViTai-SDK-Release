@@ -11,17 +11,49 @@ Python==3.12.*
 ## 在conda环境中安装依赖
 ```bash
 pip install pynput
-pip install loguru
 ```
 
 ## 如何使用
 
+**重要：必须先 source ROS2 环境，再 source workspace 环境**
+
+### Bash 用户
 ```bash
+# 1. 先 source ROS2 环境
+source /opt/ros/jazzy/setup.bash
+
+# 2. 再构建和 source workspace
 cd ros2
 colcon build
 source install/setup.bash
+
+# 3. 运行节点
 ros2 run vitai_ros2_sdk vt_publisher_node
 ros2 run vitai_ros2_sdk vt_subscriber_node
+```
+
+### Zsh 用户（推荐）
+```bash
+# 1. 先 source ROS2 环境
+source /opt/ros/jazzy/setup.zsh
+
+# 2. 再构建和 source workspace
+cd ros2
+colcon build
+source install/setup.zsh
+
+# 3. 运行节点
+ros2 run vitai_ros2_sdk vt_publisher_node
+ros2 run vitai_ros2_sdk vt_subscriber_node
+```
+
+**提示**：可以将 ROS2 环境添加到 `~/.zshrc` 或 `~/.bashrc` 中：
+```bash
+# 对于 zsh 用户，添加到 ~/.zshrc
+echo "source /opt/ros/jazzy/setup.zsh" >> ~/.zshrc
+
+# 对于 bash 用户，添加到 ~/.bashrc
+echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 ```
 
 ## 如何关闭ROS2同一局域网跨设备通信
@@ -44,8 +76,8 @@ export PYTHONPATH=$PYTHONPATH:/home/{username}/miniconda3/envs/{envname}/lib/pyt
 - **`/depth_map`** (sensor_msgs/Image) - 从视触觉数据重建的3D深度图
 - **`/origin_markers`** (sensor_msgs/PointCloud) - 原始标记点位置（2D点，z=0）
 - **`/markers`** (sensor_msgs/PointCloud) - 当前标记点位置（2D点，z=0）
-- **`/vector`** (sensor_msgs/PointCloud) - xyz向量（3D点）
-
+- **`/vector`** (sensor_msgs/PointCloud) - 3D力向量（单个3D点）
+- **`/slip_state`** (std_msgs/String) - 滑动检测状态
 
 所有带header的消息都包含来自ROS2时钟的时间戳。
 
