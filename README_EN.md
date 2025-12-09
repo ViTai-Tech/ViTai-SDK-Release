@@ -10,7 +10,7 @@ SDK User Guide: https://docs.vitai.site/
 
 | Category | Supported Versions/Platforms |
 |----------|------------------------------|
-| **Python** | 3.10, 3.12 |
+| **Python** | 3.9, 3.10, 3.11, 3.12 |
 | **Ubuntu** | 20.04, 22.04, 24.04 |
 | **Windows** | 10, 11 |
 | **MacOS** | 15 |
