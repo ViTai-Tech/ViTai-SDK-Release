@@ -7,7 +7,7 @@ from datetime import datetime
 import cv2
 import numpy as np
 import os
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 from utils import get_project_root, put_text_to_image, create_folder
 
 def main():
@@ -24,27 +24,25 @@ def main():
         create_folder(folder)
 
         config = finder.get_device_by_sn(sn)
-        gf225 = GF225(config=config, 
-                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                    output_format=GF225OutputProfile.W240_H240)
+        vtsensor = VTSensor(config=config)
         # 传感器校准
-        gf225.calibrate()
+        vtsensor.calibrate()
     except VTSError as e:
-        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
+        print(f"Error: {e}, suggestion: {e.suggestion}")
         return
    
     while 1:
         try:
-            data = gf225.collect_sensor_data(
-                    GFDataType.WARPED_IMG,
-                    GFDataType.DIFF_IMG,
-                    GFDataType.DEPTH_MAP)
+            data = vtsensor.collect_sensor_data(
+                    VTSDataType.WARPED_IMG,
+                    VTSDataType.DIFF_IMG,
+                    VTSDataType.DEPTH_MAP)
         except VTSError as e:
             print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
             break
-        frame = data[GFDataType.WARPED_IMG]     # np.ndarray, shape=(H,W,3)
-        diff = data[GFDataType.DIFF_IMG]        # np.ndarray, shape=(H,W,3)
-        depth_map = data[GFDataType.DEPTH_MAP]  # np.ndarray, shape=(H,W), dtype=float32
+        frame = data[VTSDataType.WARPED_IMG]     # np.ndarray, shape=(H,W,3)
+        diff = data[VTSDataType.DIFF_IMG]        # np.ndarray, shape=(H,W,3)
+        depth_map = data[VTSDataType.DEPTH_MAP]  # np.ndarray, shape=(H,W), dtype=float32
 
 
         # 将三张图合并显示
@@ -67,11 +65,11 @@ def main():
             break
         elif key == ord("e"):
             # 按e 重新设置背景图
-            data = gf225.collect_sensor_data(GFDataType.WARPED_IMG)
-            bg = data[GFDataType.WARPED_IMG]
-            gf225.calibrate(bg)
+            data = vtsensor.collect_sensor_data(VTSDataType.WARPED_IMG)
+            bg = data[VTSDataType.WARPED_IMG]
+            vtsensor.calibrate(bg)
 
-    gf225.release()
+    vtsensor.release()
 
 
 if __name__ == "__main__":
