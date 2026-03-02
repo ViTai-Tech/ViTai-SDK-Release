@@ -7,7 +7,7 @@ from geometry_msgs.msg import Point32
 from std_msgs.msg import String
 from pynput import keyboard
 
-from pyvitaisdk import GF225, VTSDeviceFinder, VTSError, GFDataType
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSError, VTSDataType
 
 
 class VtPublisherNode(Node):
@@ -28,7 +28,7 @@ class VtPublisherNode(Node):
         self.timer = self.create_timer(0.01, self.timer_callback)
         self.bridge = CvBridge()
         self.finder = None
-        self.gf225 = None
+        self.vtsensor = None
         self.init_vt()
 
         self.key = ''
@@ -38,35 +38,35 @@ class VtPublisherNode(Node):
     def init_vt(self):
         self.finder = VTSDeviceFinder()
         config = self.finder.get_device_by_sn(self.finder.get_sns()[0])
-        self.gf225 = GF225(config=config)
-        self.gf225.calibrate()
+        self.vtsensor = VTSensor(config=config)
+        self.vtsensor.calibrate()
 
     def timer_callback(self):
         try:
-            data = self.gf225.collect_sensor_data(
-                    GFDataType.TIME_STAMP,
-                    GFDataType.RAW_IMG,
-                    GFDataType.WARPED_IMG,
-                    GFDataType.DIFF_IMG,
-                    GFDataType.DEPTH_MAP,
-                    GFDataType.MARKER_IMG,
-                    GFDataType.MARKER_ORIGIN_VECTOR,
-                    GFDataType.MARKER_CURRENT_VECTOR,
-                    GFDataType.MARKER_OFFSET_VECTOR,
-                    GFDataType.XYZ_VECTOR,
-                    GFDataType.SLIP_STATE
+            data = self.vtsensor.collect_sensor_data(
+                    VTSDataType.TIME_STAMP,
+                    VTSDataType.RAW_IMG,
+                    VTSDataType.WARPED_IMG,
+                    VTSDataType.DIFF_IMG,
+                    VTSDataType.DEPTH_MAP,
+                    VTSDataType.MARKER_IMG,
+                    VTSDataType.MARKER_ORIGIN_VECTOR,
+                    VTSDataType.MARKER_CURRENT_VECTOR,
+                    VTSDataType.MARKER_OFFSET_VECTOR,
+                    VTSDataType.XYZ_VECTOR,
+                    VTSDataType.SLIP_STATE
                 )
         except VTSError as e:
             self.get_logger().error(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
             return
         
-        raw_frame = data[GFDataType.RAW_IMG]
-        warped_frame = data[GFDataType.WARPED_IMG]
-        depth_map = data[GFDataType.DEPTH_MAP]
-        origin_markers = data[GFDataType.MARKER_ORIGIN_VECTOR]
-        current_markers = data[GFDataType.MARKER_CURRENT_VECTOR]
-        slip_state = data[GFDataType.SLIP_STATE]
-        xyz_vector = data[GFDataType.XYZ_VECTOR]
+        raw_frame = data[VTSDataType.RAW_IMG]
+        warped_frame = data[VTSDataType.WARPED_IMG]
+        depth_map = data[VTSDataType.DEPTH_MAP]
+        origin_markers = data[VTSDataType.MARKER_ORIGIN_VECTOR]
+        current_markers = data[VTSDataType.MARKER_CURRENT_VECTOR]
+        slip_state = data[VTSDataType.SLIP_STATE]
+        xyz_vector = data[VTSDataType.XYZ_VECTOR]
 
 
         self.publish_image(self.raw_img_pub, raw_frame, encoding="bgr8")
@@ -75,12 +75,11 @@ class VtPublisherNode(Node):
         self.publish_marker(self.origin_markers_pub, origin_markers)
         self.publish_marker(self.markers_pub, current_markers)
         self.publish_msg(self.slip_state_pub, slip_state.name)
-        self.publish_vector(self.vector_pub, xyz_vector)
-
-
+        self.publish_vector(self.vector_pub, xyz_vector) 
+            
         if self.key in ["r"]:
             self.get_logger().info(f'self.key: "{self.key}"')
-            self.gf225.calibrate()
+            self.vtsensor.calibrate()
 
         self.key = ''
 
@@ -144,7 +143,7 @@ class VtPublisherNode(Node):
             # 先停止 timer 避免回调继续执行
             self.timer.cancel()
             # 停止传感器后台线程
-            self.gf225.release()
+            self.vtsensor.release()
             # 停止键盘监听
             self.listener.stop()
             # 销毁节点并关闭 ROS2
