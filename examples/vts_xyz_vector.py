@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm
 import numpy as np
 import cv2
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 from utils import debounce
 
 # 创建一个包含20个逐渐变深的渐变色的颜色映射
@@ -27,13 +27,11 @@ def main():
         sn = finder.get_sns()[0]
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
-        gf225 = GF225(config=config, 
-                    marker_size=9,
-                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                    output_format=GF225OutputProfile.W240_H240)
+        vtsensor = VTSensor(config=config, 
+                    marker_size=9)
 
         # 传感器校准
-        gf225.calibrate()
+        vtsensor.calibrate()
     except VTSError as e:
         print(f"Error finding device: {e}, suggestion: {e.suggestion}")
         return
@@ -48,12 +46,12 @@ def main():
     o_v = None
     while True:
         try:
-            data = gf225.collect_sensor_data(GFDataType.XYZ_VECTOR, GFDataType.WARPED_IMG)
+            data = vtsensor.collect_sensor_data(VTSDataType.XYZ_VECTOR, VTSDataType.WARPED_IMG)
         except VTSError as e:
             print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
             break
-        xyz_vector = data[GFDataType.XYZ_VECTOR] # np.ndarray, shape=(N,M,3)
-        frame = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
+        xyz_vector = data[VTSDataType.XYZ_VECTOR] # np.ndarray, shape=(N,M,3)
+        frame = data[VTSDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
         cv2.imshow("image", frame)
         c_v = xyz_vector.reshape(-1, 3)  # 当前帧三维坐标点
         if o_v is None:
@@ -87,7 +85,7 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == 27 or key == ord("q"):
             break
-    gf225.release()
+    vtsensor.release()
     plt.close('all')  # 关闭所有图形窗口
 
 if __name__ == "__main__":

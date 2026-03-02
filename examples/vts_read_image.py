@@ -4,7 +4,7 @@
 Description  : Example:获取传感器图像
 """
 import cv2
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 
 
 def read_image():
@@ -17,26 +17,27 @@ def read_image():
         sn = finder.get_sns()[0]
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
-        gf225 = GF225(config=config, 
-                  stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                  output_format=GF225OutputProfile.W240_H240)
+        vtsensor = VTSensor(config=config)
     except VTSError as e:
-        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
+        print(f"Error initializing: {e}, suggestion: {e.suggestion}")
         return
 
     while 1:
         try:
-            data = gf225.collect_sensor_data(
-                GFDataType.TIME_STAMP,
-                GFDataType.RAW_IMG,
-                GFDataType.WARPED_IMG)
+            data = vtsensor.collect_sensor_data(
+                VTSDataType.TIME_STAMP,
+                VTSDataType.RAW_IMG,
+                VTSDataType.WARPED_IMG)
         except VTSError as e:
             print(f"Error collecting sensor data: {e}, suggestion: {e.suggestion}")
             break
-        raw_img = data[GFDataType.RAW_IMG] # np.ndarray, shape=(H,W,3)
-        warped_img = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
+        raw_img = data[VTSDataType.RAW_IMG] # np.ndarray, shape=(H,W,3)
+        warped_img = data[VTSDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
         h, w = raw_img.shape[:2]
-        warped_img_resized = cv2.resize(warped_img, (h, h))
+        h2, w2 = warped_img.shape[:2]
+        # 计算等比例缩放后的新宽度
+        new_width = int(w2 * (h / h2))
+        warped_img_resized = cv2.resize(warped_img, (new_width, h))
         combined = cv2.hconcat([raw_img, warped_img_resized])
         cv2.imshow("Raw Frame (Left) | Warped Frame (Right)", combined)
 
@@ -44,7 +45,7 @@ def read_image():
         if key == 27 or key == ord("q"):
             break
 
-    gf225.release()
+    vtsensor.release()
 
 
 

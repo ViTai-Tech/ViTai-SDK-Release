@@ -6,7 +6,7 @@ Description  : Example:6维力估计
 import time
 import cv2
 import matplotlib.pyplot as plt
-from pyvitaisdk import GF225, VTSDeviceFinder, GF225VideoStreamProfile, GF225OutputProfile, GFDataType, VTSError
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 import numpy as np
 from collections import deque
 
@@ -106,16 +106,15 @@ def main():
         sn = finder.get_sns()[0]
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
-        gf225 = GF225(config=config, 
+        vtsensor = VTSensor(config=config, 
                     marker_size=21, # [rows, cols]
-                    #   marker_offsets=[10, 10, 10, 10],
-                    stream_format=GF225VideoStreamProfile.MJPG_640_360_30,
-                    output_format=GF225OutputProfile.W240_H240)
+                    #   marker_offsets=[10, 10, 10, 10], # [top, bottom, left, right] in pixels
+        )
         # 传感器校准
-        gf225.calibrate()
+        vtsensor.calibrate()
 
     except VTSError as e:
-        print(f"Error initializing GF225: {e}, suggestion: {e.suggestion}")
+        print(f"Error: {e}, suggestion: {e.suggestion}")
         return
 
     rt_plotter = RealTimePlotter()
@@ -124,15 +123,15 @@ def main():
     while 1:
         t1 = time.monotonic()
         try:
-            data = gf225.collect_sensor_data(
-                    GFDataType.WARPED_IMG,
-                    GFDataType.FORCE6D_VECTOR)
+            data = vtsensor.collect_sensor_data(
+                    VTSDataType.WARPED_IMG,
+                    VTSDataType.FORCE6D_VECTOR)
         except VTSError as e:
             print(f"Error collecting sensor data: {e}, suggestion {e.suggestion}")
             break
         
-        warped_img = data[GFDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
-        force6d_vector = data[GFDataType.FORCE6D_VECTOR] # np.ndarray, shape=(6,)
+        warped_img = data[VTSDataType.WARPED_IMG] # np.ndarray, shape=(H,W,3)
+        force6d_vector = data[VTSDataType.FORCE6D_VECTOR] # np.ndarray, shape=(6,)
         # print(f"Force6D Vector: {force6d_vector}")
         f = force6d_vector[0:3]  # Fx, Fy, Fz
         m = force6d_vector[3:6]  # Mx, My, Mz
@@ -144,9 +143,9 @@ def main():
         if key == 27 or key == ord("q"):
                 break
         elif key == ord("e"):
-            gf225.calibrate()
+            vtsensor.calibrate()
 
-    gf225.release()
+    vtsensor.release()
 
 
 if __name__ == "__main__":
