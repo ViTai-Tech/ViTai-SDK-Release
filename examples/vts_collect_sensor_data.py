@@ -41,8 +41,8 @@ def parse_args():
                         help='离线处理模式（使用本地图像）')
     parser.add_argument('--sn', type=str, default=None,
                         help='传感器序列号（在线模式）')
-    parser.add_argument('--sensor-type', type=str, choices=['GF225', 'GFBCI', 'GFBCT'], default='GF225',
-                        help='传感器类型（离线模式必填）: GF225, GFBCI, GFBCT')
+    parser.add_argument('--sensor-type', type=str, choices=['GF225', 'GF220'], default='GF225',
+                        help='传感器类型（离线模式必填）: GF225, GF220')
     parser.add_argument('--bg-image', type=str, default=None,
                         help='背景图像路径（离线模式）')
     parser.add_argument('--frame-image', type=str, default=None,
@@ -70,10 +70,10 @@ def main():
             # 解析手指类型
             if args.sensor_type == 'GF225':
                 sensor_type = VTSensorType.GF225
-            elif args.sensor_type == 'GFBCT':
-                sensor_type = VTSensorType.GFBCT
-            else:  # GFBCI
-                sensor_type = VTSensorType.GFBCI
+            elif args.sensor_type == 'GF220':
+                sensor_type = VTSensorType.GF220
+            else:  
+                raise ValueError(f"Unsupported sensor type: {args.sensor_type}")
 
             
             # 加载背景图和帧图像
@@ -179,6 +179,7 @@ def main():
         while True:
             # 示例 : 获取数据
             try:
+                t1 = time.time()
                 data = vtsensor.collect_sensor_data(
                     VTSDataType.TIME_STAMP,
                     VTSDataType.WARPED_IMG,
@@ -189,6 +190,7 @@ def main():
                     VTSDataType.MARKER_CURRENT_VECTOR,
                     VTSDataType.MARKER_OFFSET_VECTOR,
                     VTSDataType.XYZ_VECTOR,
+                    VTSDataType.FORCE6D_VECTOR,
                     frame=frame
                 )
             except VTSError as e:
@@ -209,21 +211,22 @@ def main():
             
             # 显示数据
             depth_max = max(1, np.max(depth_map))
-            tmp_depth_map = (depth_map / depth_max * 255).astype(np.uint8)
+            tmp_depth_map_float = depth_map / depth_max * 255 * 1 # 增加对比度 * 2
+            tmp_depth_map = np.clip(tmp_depth_map_float, 0, 255).astype(np.uint8)
             depth_map_display = np.stack([tmp_depth_map]*3, axis=-1)
             frame_copy = warped_img.copy()
 
             # 水平拼接三张图
-            combined = np.hstack([frame_copy, diff_img, depth_map_display, marker_img])
+            combined = np.hstack([frame_copy, diff_img, marker_img, depth_map_display])
             cv2.imshow(f"{sn} Combined Image", combined)
 
-            # 打印 marker 坐标信息
-            print(f"marker_origin_vector.shape: {marker_origin_vector.shape}")
-            print(f"marker_current_vector.shape: {marker_current_vector.shape}")
-            print(f"marker_offset_vector.shape: {marker_offset_vector.shape}")
-            print(f"xyz_vector.shape: {xyz_vector.shape}")
-            # 打印时间戳
-            print(f"Timestamp: {timestamp} ms")
+            # # 打印 marker 坐标信息
+            # print(f"marker_origin_vector.shape: {marker_origin_vector.shape}")
+            # print(f"marker_current_vector.shape: {marker_current_vector.shape}")
+            # print(f"marker_offset_vector.shape: {marker_offset_vector.shape}")
+            # print(f"xyz_vector.shape: {xyz_vector.shape}")
+            # # 打印时间戳
+            # print(f"Timestamp: {timestamp} ms")
 
             # 保存数据
             if save_flag:
