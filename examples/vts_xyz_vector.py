@@ -27,8 +27,7 @@ def main():
         sn = finder.get_sns()[0]
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
-        vtsensor = VTSensor(config=config, 
-                    marker_size=9)
+        vtsensor = VTSensor(config=config)
 
         # 传感器校准
         vtsensor.calibrate()
@@ -74,10 +73,10 @@ def main():
         ax.set_xlim(minx, maxx)
         ax.set_ylim(miny, maxy)
         ax.set_zlim(0, 1)
-        ax.scatter(y, x, z, c=z, cmap=cmap, norm=norm, s=20)
+        ax.scatter(x, y, z, c=z, cmap=cmap, norm=norm, s=20)
         ax.set_title('3D Point Visualization')
-        ax.set_xlabel('Y Axis')
-        ax.set_ylabel('X Axis')
+        ax.set_xlabel('X Axis')
+        ax.set_ylabel('Y Axis')
         ax.set_zlabel('Z Axis')
 
         plt.pause(0.001)  # 暂停以更新显示
