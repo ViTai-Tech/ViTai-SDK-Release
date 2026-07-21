@@ -3,8 +3,13 @@
 '''
 Description  : Example:6维力估计
 '''
+import argparse
 import time
-import cv2
+import matplotlib
+
+# The SDK imports an OpenCV build linked against Qt5. Use Tk to avoid loading
+# PyQt6 into the same process when Matplotlib creates its figure.
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 import numpy as np
@@ -25,12 +30,21 @@ class RealTimePlotter:
 
         # Setup Figure
         plt.ion()
-        self.fig, self.axes = plt.subplots(2, 3, figsize=(16, 8))
+        self.fig = plt.figure(figsize=(18, 8))
+        grid = self.fig.add_gridspec(2, 4, width_ratios=[1.4, 1, 1, 1])
         self.fig.suptitle("Real-time FEM Force & Moment Reconstruction", fontsize=14, fontweight='bold')
-        
-        # Unpack axes
-        self.ax_f = self.axes[0]      # Row 1: Forces
-        self.ax_m = self.axes[1]      # Row 2: Moments
+
+        self.ax_image = self.fig.add_subplot(grid[:, 0])
+        self.ax_image.set_title("Warped Image", fontsize=12, fontweight='bold')
+        self.ax_image.axis("off")
+        self.image_artist = None
+
+        self.ax_f = [self.fig.add_subplot(grid[0, i]) for i in range(1, 4)]
+        self.ax_m = [self.fig.add_subplot(grid[1, i]) for i in range(1, 4)]
+        self._closed = False
+        self._recalibrate_requested = False
+        self.fig.canvas.mpl_connect("close_event", self._on_close)
+        self.fig.canvas.mpl_connect("key_press_event", self._on_key_press)
 
         # Setup Lines
         self.lines_f = []
@@ -64,13 +78,20 @@ class RealTimePlotter:
 
         plt.tight_layout()
 
-    def update(self, t, forces, moments):
+    def update(self, t, forces, moments, warped_img):
+        warped_rgb = warped_img[..., ::-1]
+        if self.image_artist is None:
+            self.image_artist = self.ax_image.imshow(warped_rgb)
+        else:
+            self.image_artist.set_data(warped_rgb)
         self.time_buffer.append(t)
         for i in range(3):
             self.fem_f_buffers[i].append(forces[i])
             self.fem_m_buffers[i].append(moments[i])
 
         if len(self.time_buffer) < 2:
+            self.fig.canvas.draw_idle()
+            self.fig.canvas.flush_events()
             return
 
         t_arr = np.array(self.time_buffer)
@@ -88,6 +109,24 @@ class RealTimePlotter:
         self.fig.canvas.draw_idle()
         self.fig.canvas.flush_events()
 
+    def _on_close(self, _event):
+        self._closed = True
+
+    def _on_key_press(self, event):
+        if event.key in ("escape", "q"):
+            self.close()
+        elif event.key == "e":
+            self._recalibrate_requested = True
+
+    @property
+    def is_closed(self):
+        return self._closed
+
+    def consume_recalibrate_request(self):
+        requested = self._recalibrate_requested
+        self._recalibrate_requested = False
+        return requested
+
     def clear(self):
         self.time_buffer.clear()
         for b in self.fem_f_buffers: b.clear()
@@ -98,6 +137,14 @@ class RealTimePlotter:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="ViTai 6D force example")
+    parser.add_argument(
+        "--force-model-path",
+        required=True,
+        help="Path to the ONNX, RKNN, or TensorRT force model",
+    )
+    args = parser.parse_args()
+
     try:
         finder = VTSDeviceFinder()
         if len(finder.get_sns()) == 0:
@@ -107,20 +154,21 @@ def main():
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
         vtsensor = VTSensor(config=config, 
-                    marker_size=21, # [rows, cols]
-                    #   marker_offsets=[10, 10, 10, 10], # [top, bottom, left, right] in pixels
+                    marker_size=20, # [rows, cols]
+                    force_model_path=args.force_model_path,
         )
         # 传感器校准
         vtsensor.calibrate()
 
     except VTSError as e:
         print(f"Error: {e}, suggestion: {e.suggestion}")
+        vtsensor.release()
         return
 
     rt_plotter = RealTimePlotter()
     t0 = time.monotonic()
     
-    while 1:
+    while not rt_plotter.is_closed:
         t1 = time.monotonic()
         try:
             data = vtsensor.collect_sensor_data(
@@ -135,16 +183,12 @@ def main():
         # print(f"Force6D Vector: {force6d_vector}")
         f = force6d_vector[0:3]  # Fx, Fy, Fz
         m = force6d_vector[3:6]  # Mx, My, Mz
-        rt_plotter.update(t1-t0, f, m)
+        rt_plotter.update(t1-t0, f, m, warped_img)
 
-        cv2.imshow("Warped Frame", warped_img)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == 27 or key == ord("q"):
-                break
-        elif key == ord("e"):
+        if rt_plotter.consume_recalibrate_request():
             vtsensor.calibrate()
 
+    rt_plotter.close()
     vtsensor.release()
 
 
