@@ -8,7 +8,7 @@ from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 
 
 def read_image():
-    
+    vtsensor = None
     try:
         finder = VTSDeviceFinder()
         if len(finder.get_sns()) == 0:
@@ -20,6 +20,8 @@ def read_image():
         vtsensor = VTSensor(config=config)
     except VTSError as e:
         print(f"Error initializing: {e}, suggestion: {e.suggestion}")
+        if vtsensor is not None:
+            vtsensor.release()
         return
 
     while 1:
@@ -39,7 +41,8 @@ def read_image():
         new_width = int(w2 * (h / h2))
         warped_img_resized = cv2.resize(warped_img, (new_width, h))
         combined = cv2.hconcat([raw_img, warped_img_resized])
-        cv2.imshow("Raw Frame (Left) | Warped Frame (Right)", combined)
+        cv2.imshow("Raw Frame (Left)", raw_img)
+        cv2.imshow("Warped Frame (Right)", warped_img)
 
         key = cv2.waitKey(1) & 255
         if key == 27 or key == ord("q"):

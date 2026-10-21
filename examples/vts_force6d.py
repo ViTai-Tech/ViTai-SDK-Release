@@ -5,7 +5,13 @@ Description  : Example:6维力估计
 '''
 import argparse
 import time
-import matplotlib
+
+try:
+    import matplotlib
+except ImportError:
+    raise SystemExit(
+        "本示例需要 matplotlib，请先安装：pip install \"matplotlib>=3.9.0,<=3.10.8\""
+    )
 
 # The SDK imports an OpenCV build linked against Qt5. Use Tk to avoid loading
 # PyQt6 into the same process when Matplotlib creates its figure.

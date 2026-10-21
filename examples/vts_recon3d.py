@@ -11,6 +11,7 @@ from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 from utils import get_project_root, put_text_to_image, create_folder
 
 def main():
+    vtsensor = None
     try:
         project_root = get_project_root()
         finder = VTSDeviceFinder()
@@ -29,6 +30,8 @@ def main():
         vtsensor.calibrate()
     except VTSError as e:
         print(f"Error: {e}, suggestion: {e.suggestion}")
+        if vtsensor is not None:
+            vtsensor.release()
         return
    
     while 1:
@@ -52,8 +55,8 @@ def main():
         
         frame_copy = frame.copy()
 
-        # put_text_to_image(frame_copy, f'{np.max(depth_map):.6f}', (0, 30))
-        # put_text_to_image(frame_copy, f'{np.mean(depth_map):.6f}', (0, 60))
+        put_text_to_image(frame_copy, f'{np.max(depth_map):.6f}', origin=(0, 30))
+        # put_text_to_image(frame_copy, f'{np.mean(depth_map):.6f}', origin=(0, 60))
         
         # 水平拼接三张图
         combined = np.hstack([frame_copy, diff, depth_map_display])
