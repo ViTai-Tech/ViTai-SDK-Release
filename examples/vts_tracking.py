@@ -8,7 +8,7 @@ from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
 import numpy as np
 
 def tracking():
-
+    vtsensor = None
     try:
         finder = VTSDeviceFinder()
         if len(finder.get_sns()) == 0:
@@ -17,13 +17,13 @@ def tracking():
         sn = finder.get_sns()[0]
         print(f"sn: {sn}")
         config = finder.get_device_by_sn(sn)
-        vtsensor = VTSensor(config=config, 
-                    marker_size=9,
-                    marker_offsets=[10, 10, 10, 10])
+        vtsensor = VTSensor(config=config)
         # 传感器校准
         vtsensor.calibrate()
     except VTSError as e:
         print(f"Error: {e}, suggestion: {e.suggestion}")
+        if vtsensor is not None:
+            vtsensor.release()
         return
 
     while 1:

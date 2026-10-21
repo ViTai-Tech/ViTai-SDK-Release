@@ -5,11 +5,12 @@ Description  : Example:获取滑动状态
 '''
 
 import cv2
-from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError
+from pyvitaisdk import VTSensor, VTSDeviceFinder, VTSDataType, VTSError, VTSlipState
 from utils import put_text_to_image
 
 
 def main():
+    vtsensor = None
     try:
         finder = VTSDeviceFinder()
         if len(finder.get_sns()) == 0:
@@ -23,6 +24,8 @@ def main():
         vtsensor.calibrate()
     except VTSError as e:
         print(f"Error: {e}, suggestion: {e.suggestion}")
+        if vtsensor is not None:
+            vtsensor.release()
         return
 
     while 1:
@@ -35,6 +38,20 @@ def main():
             break   
         frame = data[VTSDataType.WARPED_IMG]
         slip_state = data[VTSDataType.SLIP_STATE]
+        if slip_state == VTSlipState.NO_OBJ:
+            print("No object detected.")
+        elif slip_state == VTSlipState.CONTACT:
+            print("Object in contact.")
+        elif slip_state == VTSlipState.INCIPIENT_SLIP:
+            print("Incipient slip detected.")
+        elif slip_state == VTSlipState.PARTIAL_SLIP:
+            print("Partial slip detected.")
+        elif slip_state == VTSlipState.COMPLETE_SLIP:
+            print("Complete slip detected.")
+        elif slip_state == VTSlipState.STEADY_HOLD:
+            print("Steady hold detected.")
+        else:
+            print("Unknown slip state.")
         frame_copy = frame.copy()
         put_text_to_image(frame_copy, slip_state.name)
         cv2.imshow(f"frame", frame_copy)

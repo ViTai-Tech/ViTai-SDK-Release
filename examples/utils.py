@@ -22,9 +22,8 @@ def debounce(O: np.ndarray, C: np.ndarray):
     C[:, 2] = O[:, 2] + K2 * D[:, 2]
 
 
-def put_text_to_image(img: np.ndarray, text: str, origin= (10, 30)) -> None:
+def put_text_to_image(img: np.ndarray, text: str, font_scale: float = 0.8, origin= (10, 30)) -> None:
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.8
     color = (255, 255, 255)
     thickness = 1
     cv2.putText(img, text, origin, font, font_scale, color, thickness, cv2.LINE_AA)
